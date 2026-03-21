@@ -46,3 +46,4 @@ bool do_we_support_this_sign(char s){
 bool do_we_support_this_data_structure(std::string s){
     return supported_data_structure.count(s);
 }
+

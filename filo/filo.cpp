@@ -14,6 +14,7 @@ void error_at_line(std::string s , int y){
     print_debug("program crash due to->"+s);
     print_debug("program crash at line "+ std::to_string(y));
     print_debug("->"+ code_str[y]);
+    exit(0);
 }
 
 void load_code(int argc , char* argv[]){
@@ -47,7 +48,7 @@ void parser(std::vector<std::string> &cst , std::vector<std::vector<std::string>
                     str.clear();
                 }
                 else {
-                    temp.push_back(str);
+                    if(!str.empty())temp.push_back(str);
                     str.clear();
                     str.push_back('"');
                     qot=1;
@@ -76,6 +77,7 @@ void parser(std::vector<std::string> &cst , std::vector<std::vector<std::string>
             }
             else error_filo("sign '"+ std::string(1,val[i]) + "' not supported");
         }
+        if(qot)error_filo("string does not close");
         if(!str.empty())temp.push_back(str);
         cvs.push_back(temp);
     }
@@ -150,22 +152,47 @@ void set_int(std::vector<std::vector<std::string>> &val , int y , int x){
     variables[var_name] = (int)te.first;
 }
 
+void stinger(std::vector<std::vector<std::string>> &val , int y , int x , std::string &s){
+    for(;x<val[y].size() ; x++){
+        if((val[y][x][0]=='"')&&(val[y][x].back()=='"')){
+            std::string cn;
+            for(int i=1; i<val[y][x].size()-1 ; i++)cn.push_back(val[y][x][i]);
+            s+=cn;
+        }
+        else if(var_exist(val[y][x])){
+            if(read_variable_type(val[y][x])!="str")error_at_line("cannot merge "+ read_variable_type(val[y][x]) + " in string" , y);
+            s+= std::get<std::string>(variables[val[y][x]]);
+        }
+        else error_at_line("invalid syntax" , y);
+        x++;
+        if(x>=val[y].size())continue;
+        if(val[y][x]!="+")error_at_line("invlid syntax" , y);
+    }
+}
+
 void set_str(std::vector<std::vector<std::string>> &val , int y , int x){
     x++;
     std::string name = val[y][x];
     bool er=0;
     for(auto var:name)if((var>'z')&&(var<'a'))er=1;
-
+    std::string value;
     if(er)error_at_line("only a-z characters are allowed as variable name" , y);
+    x++;
+    if(val[y][x]=="="){
+        stinger(val , y , x+1 , value);
+    }
+    else error_at_line("invalid syntax" , y);
+
+    write_variable_type(name , "str");
+    variables[name] = (std::string)value;
 
 }
 
 void process_data_structure(std::vector<std::vector<std::string>> &val , int y , int x){
     std::string type = val[y][x];
     if(type=="int")set_int(val , y , x);
-    if(type == "str")set_str(val , y , x);
+    else if((type == "str")||(type=="string"))set_str(val , y , x);
     else error_filo("invalid data type at line ->"+ std::to_string(y));
-
 }
 
 void interp(std::vector<std::vector<std::string>> &val){

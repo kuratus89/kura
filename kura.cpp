@@ -12,11 +12,17 @@ int main(int argc , char* argv[]){
         for(auto var:val)std::cout<<var<<" : ";
         std::cout<<"\n";
     }
-    // interp(code);
+    std::cout<<"\n\n";
 
-    // for(auto val:variables){
-    //     std::cout<<val.first<<" "<<std::get<int>(val.second)<<"\n";
-    // }
+    interp(code);
+
+    for(auto val:variables){
+        std::cout<<val.first<<" ";
+        std::string type = read_variable_type(val.first);
+        if(type=="int")std::cout<<std::get<int>(val.second);
+        else if(type=="str")std::cout<<std::get<std::string>(val.second);
+        std::cout<<"\n";
+    }
 
     
 }
