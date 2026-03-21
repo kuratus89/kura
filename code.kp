@@ -1,2 +1,10 @@
-string hn = "hi" + " bye"
-string bn = hn  " hulululu "
+string hn = "hi" + " bye";
+string bn = hn + " hulululu ";
+int l = 10;
+print<<"hii" + br>>;
+print<<hn + " yoo">>;
+print <<stoi(l)>>;
+
+func hilo(){
+
+}

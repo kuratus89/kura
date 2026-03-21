@@ -2,7 +2,8 @@
 #include <fstream>
 #include <cstdlib>
 #include "../stora/stora.h"
-#include "../oupt/oupt.h"
+#include "../debug/debug.h"
+#include "rui.h"
 
 void error_filo(std::string s){
     print_debug("program crash in filo");
@@ -10,12 +11,7 @@ void error_filo(std::string s){
     exit(0);
 }
 
-void error_at_line(std::string s , int y){
-    print_debug("program crash due to->"+s);
-    print_debug("program crash at line "+ std::to_string(y));
-    print_debug("->"+ code_str[y]);
-    exit(0);
-}
+
 
 void load_code(int argc , char* argv[]){
 
@@ -66,10 +62,17 @@ void parser(std::vector<std::string> &cst , std::vector<std::vector<std::string>
             }
             else if(do_we_support_this_sign(val[i])){
                 if(!str.empty())temp.push_back(str);
-
-                temp.push_back(std::string(1,val[i]));
-
                 str.clear();
+                if(stack_sign(val[i])){
+                    char t = val[i];
+                    for(;val[i]==t ; i++){
+                        str.push_back(t);
+                    }
+                    i--;
+                    temp.push_back(str);
+                    str.clear();
+                }
+                else temp.push_back(std::string(1 , val[i]));
             }
             else if(val[i]==' '){
                 if(!str.empty())temp.push_back(str);
@@ -138,6 +141,7 @@ void set_int(std::vector<std::vector<std::string>> &val , int y , int x){
     std::string var_name = val[y][x];
     bool er=0;
     std::pair<int , int> te;
+    if(is_keyword(var_name))error_at_line("this name is reserved and cannot be used as variable name" , y);
     for(auto var:var_name) if((var>'z')||(var<'a'))er=1;
 
     if(er)error_filo("only a-z character allowed as variable name \n error at line ->"+ std::to_string(y+1));
@@ -152,34 +156,21 @@ void set_int(std::vector<std::vector<std::string>> &val , int y , int x){
     variables[var_name] = (int)te.first;
 }
 
-void stinger(std::vector<std::vector<std::string>> &val , int y , int x , std::string &s){
-    for(;x<val[y].size() ; x++){
-        if((val[y][x][0]=='"')&&(val[y][x].back()=='"')){
-            std::string cn;
-            for(int i=1; i<val[y][x].size()-1 ; i++)cn.push_back(val[y][x][i]);
-            s+=cn;
-        }
-        else if(var_exist(val[y][x])){
-            if(read_variable_type(val[y][x])!="str")error_at_line("cannot merge "+ read_variable_type(val[y][x]) + " in string" , y);
-            s+= std::get<std::string>(variables[val[y][x]]);
-        }
-        else error_at_line("invalid syntax" , y);
-        x++;
-        if(x>=val[y].size())continue;
-        if(val[y][x]!="+")error_at_line("invlid syntax" , y);
-    }
-}
+
+
+
 
 void set_str(std::vector<std::vector<std::string>> &val , int y , int x){
     x++;
     std::string name = val[y][x];
     bool er=0;
+    if(is_keyword(name))error_at_line("this name is reserved and cannot be used as variable name" , y);
     for(auto var:name)if((var>'z')&&(var<'a'))er=1;
     std::string value;
     if(er)error_at_line("only a-z characters are allowed as variable name" , y);
     x++;
     if(val[y][x]=="="){
-        stinger(val , y , x+1 , value);
+        rui_str(val , y , x+1 , value , "");
     }
     else error_at_line("invalid syntax" , y);
 
@@ -195,13 +186,16 @@ void process_data_structure(std::vector<std::vector<std::string>> &val , int y ,
     else error_filo("invalid data type at line ->"+ std::to_string(y));
 }
 
+// void process_debug(std::vector<std::)
+
 void interp(std::vector<std::vector<std::string>> &val){
     for(int y=0 ; y<val.size() ; y++){
         if(val[y].empty())continue;
-
-        if(do_we_support_this_data_structure(val[y][0])){
-            process_data_structure(val , y , 0);
+        if(is_keyword(val[y][0])){
+            if(do_we_support_this_data_structure(val[y][0]))process_data_structure(val , y , 0);
+            else if(do_we_support_this_debug(val[y][0]))debuger(val , y);
         }
+        
     }
 }
 

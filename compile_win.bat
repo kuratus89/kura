@@ -1,1 +1,1 @@
-g++ kura.cpp filo/filo.cpp oupt/oupt.cpp stora/stora.cpp -o kura
+g++ kura.cpp filo/filo.cpp debug/debug.cpp stora/stora.cpp filo/rui.cpp -o kura
