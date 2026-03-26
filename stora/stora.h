@@ -3,27 +3,30 @@
 #include <string>
 #include <map>
 #include <variant>
-extern std::vector<std::string> code_str;
-extern std::vector<std::vector<std::string>> code;
-extern bool debug;
-using var = std::variant<int , std::string>;
-extern std::map<std::string , var> variables;
+// #include <memory>
+struct code_struct{
+    std::string name;
+    std::vector<std::string> ln;
+};
+struct var;
 
-void write_variable_type(std::string s , std::string type);
-bool do_we_support_this_sign(char s);
-bool do_we_support_this_data_structure(std::string s);
-bool var_exist(std::string s);
-bool stack_sign(char s);
-bool do_we_support_this_debug(std::string s);
-bool is_keyword(std::string s);
-bool is_tool(std::string s);
-std::string read_variable_type(std::string s);
 
-struct func{
-    std::vector<std::string> input;
-    using vagro = std::variant<int , std::string >;
-    std::map<std::string ,vagro> var;
-    
-
+struct var{
+    // std::string type;
+    // std::variant<int , std::string , float ,std::vector<std::shared_ptr<var>> , std::map<std::string,std::shared_ptr<var>>> value;
+    std::variant<int , std::string , float , std::vector<var> , std::map<std::string , var>> value;
 };
 
+struct funct{
+    std::string name;
+    std::vector<std::pair<std::string , std::string>> carry_var_name;
+    std::map<std::string , var> variables;
+    std::vector<code_struct> code;
+};
+
+extern std::vector<std::string> code_str;
+extern std::vector<std::string> code_who;
+extern bool debug;
+extern std::vector<code_struct> code;
+extern std::map<std::string , var> global_variable;
+extern std::map<std::string , funct> functions;

@@ -20,17 +20,34 @@ void error_at_line(std::string s , int y){
     exit(0);
 }
 
-void printer(std::vector<std::vector<std::string>> &val , int y , int x){
-    if(val[y][x]!="<<")error_at_line("" , y);
-    std::string s;
-    rui_str(val , y , x +1, s , ">>");
-    print_debug(s);
+void error_exit(std::string s){
+    if(s.empty())s= "invalid syntax\n";
+    print_debug("program crash due to -> " + s + "\n");
+    exit(1);
 }
 
-std::map<std::string , void(*)(std::vector<std::vector<std::string>>&, int, int)> degu = {
-    {"print" , printer}
-};
+void print_global_var(){
+    for(auto val:global_variable){
+        std::cout<<val.first<<":";
+        if(std::holds_alternative<int>(val.second.value))std::cout<<std::get<int>(val.second.value);
+        else if(std::holds_alternative<std::string>(val.second.value))std::cout<<std::get<std::string>(val.second.value);
+        std::cout<<"\n";
+    }
+}
 
-void debuger(std::vector<std::vector<std::string>> &val , int y){
-    if(degu.count(val[y][0]))degu[val[y][0]](val , y , 1);
+void code_line_printer(std::vector<std::string> &ln){
+    for(auto val:ln)std::cout<<val<<":";
+    std::cout<<"\n";
+}
+
+void print_func_details(funct &fa){
+    std::cout<<"functions name ->";
+    std::cout<<fa.name<<"\n";
+    std::cout<<fa.carry_var_name.size()<<" carry variables\n";
+    for(auto val:fa.carry_var_name)std::cout<<val.first<<" : "<<val.second<<"\n";
+    std::cout<<"code :\n";
+    for(auto val:fa.code){
+        code_line_printer(val.ln);
+    }
+    
 }
