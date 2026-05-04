@@ -8,11 +8,6 @@ int main(int argc , char* argv[]){
     load_code(argc , argv);
     kuser(code_str , code_who);
     voimer(code_who , code , 0 , INT_MAX);
-    // for(auto val:code){
-    //     for(auto var:val.ln)std::cout<<var<<" : ";
-    //     std::cout<<"\n";
-    // }
-
     gloaby(code);  
 
     print_global_var();

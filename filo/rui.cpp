@@ -71,7 +71,7 @@ int int_merjo(std::vector<std::string> &lin , int x  , std::vector<std::map<std:
 
 
 
-void process_int(code_struct&code , int x ,std::vector<std::map<std::string , var>*> &varib){
+void set_int(code_struct&code , int x ,std::vector<std::map<std::string , var>*> &varib){
 
     for(auto val:varib)if((*val).count(code.ln[x]))error_exit("variable " + code.ln[x] + " already exist");
     std::string name = code.ln[x];
@@ -113,7 +113,7 @@ std::string str_merjo(std::vector<std::string> &lin , int &x , std::vector<std::
     return s;
 }
 
-void process_str(code_struct&code , int x , std::vector<std::map<std::string , var>*> &varib){
+void set_str(code_struct&code , int x , std::vector<std::map<std::string , var>*> &varib){
     for(auto val:varib)if((*val).count(code.ln[x]))error_exit("variable "+ code.ln[x] +" aleready exist");
     std::string name = code.ln[x];
     std::string val;
@@ -124,13 +124,48 @@ void process_str(code_struct&code , int x , std::vector<std::map<std::string , v
     (*varib.back())[name].value = val;
 
 }
+
+void process_str(code_struct &code , int x , std::vector<std::map<std::string , var>*> &varib , std::string name){
+    var* ptr;
+    bool fn=0;
+    for(auto val:varib){
+        if((*val).count(name)){
+            ptr = &((*val)[name]);
+            fn=1;
+            break;
+        }
+    }
+    if(!fn)error_exit("error in finding variable ->"+name);
+    int l = x+1;
+    if(code.ln[x]=="=")(*ptr).value = (std::string)str_merjo(code.ln , l , varib);
+    else if(code.ln[x]=="+")(*ptr).value =(std::string)std::get<std::string>((*ptr).value)+ (std::string)str_merjo(code.ln , l , varib);
+    else error_exit("invalid sign");
+
+}
+
+void process_int(code_struct &code , int x , std::vector<std::map<std::string , var> *> &varib , std::string name){
+    var* ptr;
+    bool fn=0;
+    for(auto val:varib){
+        if((*val).count(name)){
+            ptr = &((*val)[name]);
+            fn=1;
+            break;
+        }
+    }
+    if(!fn)error_exit("error in finding variable");
+    int l = x+1;
+    if()
+}
+
 std::map<std::string , void(*)(code_struct& , int y ,  std::vector<std::map<std::string , var>*>&)> ma={
-    {"int" , process_int},
-    {"string" , process_str},
-    {"str" , process_str}
+    {"int" , set_int},
+    {"string" , set_str},
+    {"str" , set_str}
 };
 
-void process_data_structure(code_struct &code , std::vector<std::map<std::string , var>*> &varib){
+
+void set_data_structure(code_struct &code , std::vector<std::map<std::string , var>*> &varib){
     if(ma.count(code.name))ma[code.name](code, 0 , varib);
     else error_exit("invalid syntax");
 }

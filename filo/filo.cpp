@@ -95,3 +95,11 @@ void gloaby(std::vector<code_struct> &code){
         else if(val.name == "func") process_func(val);
     }
 }
+
+void localy(std::vector<code_struct>&code , std::vector<std::map<std::string , var>*> varib ){
+    for(auto val:code){
+        if(is_data_structure(val.name))set_data_structure(val , varib);
+        else if(functions.count(val.name))print_debug("func");
+        else if(global_variable.count(val.name))process_data_structure(val , varib);
+    }
+}

@@ -3,6 +3,14 @@
 #include "../debug/debug.h"
 #include "filo.h"
 
+void print(){
+
+}
+
+std::map<std::string , void(*)()> sys_func = {
+
+};
+
 void cvn(std::vector<std::pair<std::string , std::string >> &carv , std::vector<std::string> &code , int &x){
     if(code[x]!="(")error_exit("invalid syntax");
     x++;
@@ -36,4 +44,10 @@ void process_func(code_struct &code){
     if((code.ln[y]!="}")||(code.ln[y+1]!=";"))error_exit("invalid syntax");
     voimer(code.ln , temp.code , x ,y);  
     functions[code.name] = temp;  
+}
+
+var run_func(funct fun , var car_var){
+    for(auto val:fun.carry_var_name){
+        
+    }
 }
