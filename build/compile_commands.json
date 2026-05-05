@@ -1,0 +1,14 @@
+[
+{
+  "directory": "D:/krishna/github/kura/build",
+  "command": "\"D:\\krishna\\mingw(c++ compiler)\\w64devkit\\bin\\gcc.exe\"   -g -o CMakeFiles\\Kura.dir\\src\\kura.c.obj -c D:\\krishna\\github\\kura\\src\\kura.c",
+  "file": "D:/krishna/github/kura/src/kura.c",
+  "output": "CMakeFiles/Kura.dir/src/kura.c.obj"
+},
+{
+  "directory": "D:/krishna/github/kura/build",
+  "command": "\"D:\\krishna\\mingw(c++ compiler)\\w64devkit\\bin\\gcc.exe\"   -g -o CMakeFiles\\Kura.dir\\src\\memory.c.obj -c D:\\krishna\\github\\kura\\src\\memory.c",
+  "file": "D:/krishna/github/kura/src/memory.c",
+  "output": "CMakeFiles/Kura.dir/src/memory.c.obj"
+}
+]

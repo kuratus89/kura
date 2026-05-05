@@ -1,2 +1,0 @@
-#include "../stora/stora.h"
-

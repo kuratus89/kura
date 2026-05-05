@@ -1,0 +1,3 @@
+"C:\Program Files\CMake\bin\cmake.exe" -E rm -f CMakeFiles\Kura.dir/objects.a
+"D:\krishna\mingw(c++ compiler)\w64devkit\bin\ar.exe" qc CMakeFiles\Kura.dir/objects.a @CMakeFiles\Kura.dir\objects1.rsp
+"D:\krishna\mingw(c++ compiler)\w64devkit\bin\gcc.exe" -g -Wl,--whole-archive CMakeFiles\Kura.dir/objects.a -Wl,--no-whole-archive -o D:\krishna\github\kura\bin\Kura.exe -Wl,--out-implib,libKura.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\Kura.dir\linkLibs.rsp
