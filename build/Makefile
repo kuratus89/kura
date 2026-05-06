@@ -224,6 +224,30 @@ src/memory.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\Kura.dir\build.make CMakeFiles/Kura.dir/src/memory.c.s
 .PHONY : src/memory.c.s
 
+src/value.obj: src/value.c.obj
+.PHONY : src/value.obj
+
+# target to build an object file
+src/value.c.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Kura.dir\build.make CMakeFiles/Kura.dir/src/value.c.obj
+.PHONY : src/value.c.obj
+
+src/value.i: src/value.c.i
+.PHONY : src/value.i
+
+# target to preprocess a source file
+src/value.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Kura.dir\build.make CMakeFiles/Kura.dir/src/value.c.i
+.PHONY : src/value.c.i
+
+src/value.s: src/value.c.s
+.PHONY : src/value.s
+
+# target to generate assembly for a file
+src/value.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Kura.dir\build.make CMakeFiles/Kura.dir/src/value.c.s
+.PHONY : src/value.c.s
+
 # Help Target
 help:
 	@echo The following are some of the valid targets for this Makefile:
@@ -245,6 +269,9 @@ help:
 	@echo ... src/memory.obj
 	@echo ... src/memory.i
 	@echo ... src/memory.s
+	@echo ... src/value.obj
+	@echo ... src/value.i
+	@echo ... src/value.s
 .PHONY : help
 
 

@@ -11,4 +11,5 @@ add_executable(Kura
     src/memory.c
     src/chunk.c
     src/debug.c
+    src/value.c
 )

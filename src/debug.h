@@ -2,4 +2,4 @@
 #include "chunk.h"
 #pragma once
 
-void disassembleChunk(chunk* cnk , const char* name);
+void disassembleChunk(Chunk* chunk , const char* name);

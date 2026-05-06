@@ -1,23 +1,35 @@
 
-#include "chunk.h"
+#include "Chunk.h"
 #include "memory.h"
-void initilizeChunk(chunk* cnk){
-    cnk->count = 0;
-    cnk-> capacity = 0;
-    cnk-> code = NULL;
+#include "value.h"
+void initilizeChunk(Chunk* chunk){
+    chunk->count = 0;
+    chunk-> capacity = 0;
+    chunk-> code = NULL;
+    chunk-> lines = NULL;
+    initilizeValueArray(&chunk->constants);
 }
 
-void writeChunk(chunk* cnk , uint8_t byte){
-    if(cnk->capacity - cnk->count == 0){
-            int oldCap = cnk->capacity;
-            cnk-> capacity = growCapacity(oldCap);
-            cnk->code = growArray(uint8_t , cnk->code , oldCap , cnk->capacity);
+void writeChunk(Chunk* chunk , uint8_t byte , int line){
+    if(chunk->capacity - chunk->count == 0){
+            int oldCap = chunk->capacity;
+            chunk-> capacity = growCapacity(oldCap);
+            chunk->code = growArray(uint8_t , chunk->code , oldCap , chunk->capacity);
+            chunk->lines = growArray(int , chunk->lines , oldCap ,chunk->capacity);
     }
-    cnk->code[cnk->count]= byte;
-    cnk->count++;
+    chunk->code[chunk->count]= byte;
+    chunk->lines[chunk->count] = line;
+    chunk->count++;
 }
 
-void freeChunk(chunk* cnk){
-    freeArray(uint8_t , cnk , cnk->capacity);
-    initilizeChunk(cnk);
+void freeChunk(Chunk* chunk){
+    freeArray(uint8_t , chunk , chunk->capacity);
+    freeValueArray(&chunk->constants);
+    freeArray(int , chunk->lines , chunk-> capacity);
+    initilizeChunk(chunk);
+}
+
+int addConstant(Chunk* chunk , Value value){
+    writeValueArray(&chunk->constants , value);
+    return chunk->constants.count -1;
 }

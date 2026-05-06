@@ -1,26 +1,37 @@
 #include "common.h"
 #include "chunk.h"
+#include "value.h"
 #include <stdio.h>
 
-void printInstructer(const char* instruct){
+int printInstructer(const char* instruct , int offset){
     printf("%s\n" , instruct);
+    return offset+1;
 }
 
-int disassembleInstruction(chunk* cnk , int offset){
-    printf("%04d-> " , offset);
 
-    uint8_t inst = cnk->code[offset];
+int constantInstruction(const char* name , Chunk* chunk , int offset){
+
+    uint8_t constant = chunk->code[offset +1];
+    printf("%-16s %4d '" , name , constant);
+    printValue(chunk->constants.values[constant]);
+    printf("'\n");
+    return offset+2;
+}
+
+int disassembleInstruction(Chunk* chunk , int offset){
+    printf("%04d %d-> " , offset , chunk->lines[offset]);
+
+    uint8_t inst = chunk->code[offset];
     switch(inst){
-        case OP_RETURN:
-            printInstructer("OP_RETURN");
-            break;
+        case OP_RETURN: return printInstructer("OP_RETURN" , offset);
+        case OP_CONSTANT: return constantInstruction("OP_CONSTANT" , chunk , offset);
         default : printf("Unknow opCode %d\n",inst);
     }
     return offset+1;
 
 }
 
-void disassembleChunk(chunk* cnk , const char* name){
+void disassembleChunk(Chunk* cnk , const char* name){
     printf("<=== %s ===>\nCount -> %d\nCapacity -> %d\n\n" , name , cnk->count , cnk->capacity);
     for(int offset=0 ; offset< cnk->count;)offset = disassembleInstruction(cnk , offset);
 }

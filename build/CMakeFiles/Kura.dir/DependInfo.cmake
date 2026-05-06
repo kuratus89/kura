@@ -12,6 +12,7 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "D:/krishna/github/kura/src/debug.c" "CMakeFiles/Kura.dir/src/debug.c.obj" "gcc" "CMakeFiles/Kura.dir/src/debug.c.obj.d"
   "D:/krishna/github/kura/src/kura.c" "CMakeFiles/Kura.dir/src/kura.c.obj" "gcc" "CMakeFiles/Kura.dir/src/kura.c.obj.d"
   "D:/krishna/github/kura/src/memory.c" "CMakeFiles/Kura.dir/src/memory.c.obj" "gcc" "CMakeFiles/Kura.dir/src/memory.c.obj.d"
+  "D:/krishna/github/kura/src/value.c" "CMakeFiles/Kura.dir/src/value.c.obj" "gcc" "CMakeFiles/Kura.dir/src/value.c.obj.d"
   )
 
 # Targets to which this target links which contain Fortran sources.
