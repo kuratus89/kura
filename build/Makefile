@@ -128,6 +128,54 @@ Kura/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\Kura.dir\build.make CMakeFiles/Kura.dir/build
 .PHONY : Kura/fast
 
+src/chunk.obj: src/chunk.c.obj
+.PHONY : src/chunk.obj
+
+# target to build an object file
+src/chunk.c.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Kura.dir\build.make CMakeFiles/Kura.dir/src/chunk.c.obj
+.PHONY : src/chunk.c.obj
+
+src/chunk.i: src/chunk.c.i
+.PHONY : src/chunk.i
+
+# target to preprocess a source file
+src/chunk.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Kura.dir\build.make CMakeFiles/Kura.dir/src/chunk.c.i
+.PHONY : src/chunk.c.i
+
+src/chunk.s: src/chunk.c.s
+.PHONY : src/chunk.s
+
+# target to generate assembly for a file
+src/chunk.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Kura.dir\build.make CMakeFiles/Kura.dir/src/chunk.c.s
+.PHONY : src/chunk.c.s
+
+src/debug.obj: src/debug.c.obj
+.PHONY : src/debug.obj
+
+# target to build an object file
+src/debug.c.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Kura.dir\build.make CMakeFiles/Kura.dir/src/debug.c.obj
+.PHONY : src/debug.c.obj
+
+src/debug.i: src/debug.c.i
+.PHONY : src/debug.i
+
+# target to preprocess a source file
+src/debug.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Kura.dir\build.make CMakeFiles/Kura.dir/src/debug.c.i
+.PHONY : src/debug.c.i
+
+src/debug.s: src/debug.c.s
+.PHONY : src/debug.s
+
+# target to generate assembly for a file
+src/debug.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Kura.dir\build.make CMakeFiles/Kura.dir/src/debug.c.s
+.PHONY : src/debug.c.s
+
 src/kura.obj: src/kura.c.obj
 .PHONY : src/kura.obj
 
@@ -185,6 +233,12 @@ help:
 	@echo ... edit_cache
 	@echo ... rebuild_cache
 	@echo ... Kura
+	@echo ... src/chunk.obj
+	@echo ... src/chunk.i
+	@echo ... src/chunk.s
+	@echo ... src/debug.obj
+	@echo ... src/debug.i
+	@echo ... src/debug.s
 	@echo ... src/kura.obj
 	@echo ... src/kura.i
 	@echo ... src/kura.s

@@ -10,5 +10,17 @@
   "command": "\"D:\\krishna\\mingw(c++ compiler)\\w64devkit\\bin\\gcc.exe\"   -g -o CMakeFiles\\Kura.dir\\src\\memory.c.obj -c D:\\krishna\\github\\kura\\src\\memory.c",
   "file": "D:/krishna/github/kura/src/memory.c",
   "output": "CMakeFiles/Kura.dir/src/memory.c.obj"
+},
+{
+  "directory": "D:/krishna/github/kura/build",
+  "command": "\"D:\\krishna\\mingw(c++ compiler)\\w64devkit\\bin\\gcc.exe\"   -g -o CMakeFiles\\Kura.dir\\src\\chunk.c.obj -c D:\\krishna\\github\\kura\\src\\chunk.c",
+  "file": "D:/krishna/github/kura/src/chunk.c",
+  "output": "CMakeFiles/Kura.dir/src/chunk.c.obj"
+},
+{
+  "directory": "D:/krishna/github/kura/build",
+  "command": "\"D:\\krishna\\mingw(c++ compiler)\\w64devkit\\bin\\gcc.exe\"   -g -o CMakeFiles\\Kura.dir\\src\\debug.c.obj -c D:\\krishna\\github\\kura\\src\\debug.c",
+  "file": "D:/krishna/github/kura/src/debug.c",
+  "output": "CMakeFiles/Kura.dir/src/debug.c.obj"
 }
 ]

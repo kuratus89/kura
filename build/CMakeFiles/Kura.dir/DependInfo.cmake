@@ -8,6 +8,8 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
+  "D:/krishna/github/kura/src/chunk.c" "CMakeFiles/Kura.dir/src/chunk.c.obj" "gcc" "CMakeFiles/Kura.dir/src/chunk.c.obj.d"
+  "D:/krishna/github/kura/src/debug.c" "CMakeFiles/Kura.dir/src/debug.c.obj" "gcc" "CMakeFiles/Kura.dir/src/debug.c.obj.d"
   "D:/krishna/github/kura/src/kura.c" "CMakeFiles/Kura.dir/src/kura.c.obj" "gcc" "CMakeFiles/Kura.dir/src/kura.c.obj.d"
   "D:/krishna/github/kura/src/memory.c" "CMakeFiles/Kura.dir/src/memory.c.obj" "gcc" "CMakeFiles/Kura.dir/src/memory.c.obj.d"
   )
