@@ -9,6 +9,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/Kura.dir/src/memory.c.obj.d"
   "CMakeFiles/Kura.dir/src/value.c.obj"
   "CMakeFiles/Kura.dir/src/value.c.obj.d"
+  "CMakeFiles/Kura.dir/src/vm.c.obj"
+  "CMakeFiles/Kura.dir/src/vm.c.obj.d"
   "D:/krishna/github/kura/bin/Kura.exe"
   "D:/krishna/github/kura/bin/Kura.exe.manifest"
   "D:/krishna/github/kura/bin/Kura.pdb"

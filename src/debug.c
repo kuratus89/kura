@@ -25,13 +25,14 @@ int disassembleInstruction(Chunk* chunk , int offset){
     switch(inst){
         case OP_RETURN: return printInstructer("OP_RETURN" , offset);
         case OP_CONSTANT: return constantInstruction("OP_CONSTANT" , chunk , offset);
+        case OP_NEGATE : return printInstructer("OP_NEGATE" , offset);
         default : printf("Unknow opCode %d\n",inst);
     }
     return offset+1;
 
 }
 
-void disassembleChunk(Chunk* cnk , const char* name){
-    printf("<=== %s ===>\nCount -> %d\nCapacity -> %d\n\n" , name , cnk->count , cnk->capacity);
-    for(int offset=0 ; offset< cnk->count;)offset = disassembleInstruction(cnk , offset);
+void disassembleChunk(Chunk* chunk , const char* name){
+    printf("<=== %s ===>\nCount -> %d\nCapacity -> %d\n\n" , name , chunk->count , chunk->capacity);
+    for(int offset=0 ; offset< chunk->count;)offset = disassembleInstruction(chunk , offset);
 }

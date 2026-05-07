@@ -12,4 +12,5 @@ add_executable(Kura
     src/chunk.c
     src/debug.c
     src/value.c
+    src/vm.c
 )

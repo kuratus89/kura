@@ -28,5 +28,11 @@
   "command": "\"D:\\krishna\\mingw(c++ compiler)\\w64devkit\\bin\\gcc.exe\"   -g -o CMakeFiles\\Kura.dir\\src\\value.c.obj -c D:\\krishna\\github\\kura\\src\\value.c",
   "file": "D:/krishna/github/kura/src/value.c",
   "output": "CMakeFiles/Kura.dir/src/value.c.obj"
+},
+{
+  "directory": "D:/krishna/github/kura/build",
+  "command": "\"D:\\krishna\\mingw(c++ compiler)\\w64devkit\\bin\\gcc.exe\"   -g -o CMakeFiles\\Kura.dir\\src\\vm.c.obj -c D:\\krishna\\github\\kura\\src\\vm.c",
+  "file": "D:/krishna/github/kura/src/vm.c",
+  "output": "CMakeFiles/Kura.dir/src/vm.c.obj"
 }
 ]
