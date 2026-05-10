@@ -1,0 +1,4 @@
+int x=10;
+string y = "hmm";
+int g = x+ y   
+;

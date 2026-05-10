@@ -28,24 +28,26 @@ static char* readFile(const char* path){
     fclose(file);
 
     if(bytesRead<fileSize){
-        fprint("Fail to read file \"%s\" \n" , path);
+        printf("Fail to read file \"%s\" \n" , path);
         exit(999);
     }
     return buffer;
 }
 
+static void runFile(const char* path){
+    char* source = readFile(path);
+    interpretResult result = interpret(source);
+    free(source);
+
+    if(result==INTERPRET_COMPILE_ERROR)exit(1);
+    if(result==INTERPRET_RUNTIME_ERROR)exit(11);
+}
 
 int main(int argc , const char* argv[]){
-    initilizeVM();
-    Chunk chunk;
-    initilizeChunk(&chunk);
-    int constant = addConstant(&chunk , 1.2);
-    writeChunk(&chunk , OP_CONSTANT , 123);
-    writeChunk(&chunk , constant , 123);
-    writeChunk(&chunk, OP_RETURN , 123);
-
-    interpret(&chunk);
-    freeChunk(&chunk);
-    freeVM();
+    if(argc==1){
+        printf("file path not found");
+        exit(87);
+    }
+    runFile(argv[1]);
     return 0;
 }

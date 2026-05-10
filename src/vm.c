@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include "debug.h"
 #include "common.h"
+#include "scanner.h"
 VM vm;
 
 void resetStack(){
@@ -84,8 +85,6 @@ static interpretResult run(){
 }
 
 
-interpretResult interpret(Chunk* chunk){
-    vm.chunk = chunk;
-    vm.ip = vm.chunk->code;
-    return run();
+interpretResult interpret(char* source){
+    scanToPtr(source);
 }

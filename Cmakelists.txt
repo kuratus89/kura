@@ -13,4 +13,5 @@ add_executable(Kura
     src/debug.c
     src/value.c
     src/vm.c
+    src/scanner.c
 )

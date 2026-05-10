@@ -16,4 +16,4 @@ typedef enum{
 
 void initilizeVM();
 void freeVM();
-interpretResult interpret(Chunk* chunk);
+interpretResult interpret(char* source);

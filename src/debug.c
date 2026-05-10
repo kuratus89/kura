@@ -1,6 +1,7 @@
 #include "common.h"
 #include "chunk.h"
 #include "value.h"
+#include "scanner.h"
 #include <stdio.h>
 
 int printInstructer(const char* instruct , int offset){
@@ -35,4 +36,18 @@ int disassembleInstruction(Chunk* chunk , int offset){
 void disassembleChunk(Chunk* chunk , const char* name){
     printf("<=== %s ===>\nCount -> %d\nCapacity -> %d\n\n" , name , chunk->count , chunk->capacity);
     for(int offset=0 ; offset< chunk->count;)offset = disassembleInstruction(chunk , offset);
+}
+
+void printScan(scanPtr* scan){
+    printf("line:%d " , (*scan).line);
+    for(char* it =(*scan).start ;it!=(*scan).end ; it++)printf("%c" , (*it));
+    printf("\n");
+}
+
+void disassembleScan(scar* fs ){
+    int cnt = (*fs).count;
+    printf("%d scans found!\n" , cnt);
+    for(int i=0 ; i<cnt ; i++){
+        printScan(((*fs).pointers+i));
+    }
 }

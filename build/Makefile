@@ -224,6 +224,30 @@ src/memory.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\Kura.dir\build.make CMakeFiles/Kura.dir/src/memory.c.s
 .PHONY : src/memory.c.s
 
+src/scanner.obj: src/scanner.c.obj
+.PHONY : src/scanner.obj
+
+# target to build an object file
+src/scanner.c.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Kura.dir\build.make CMakeFiles/Kura.dir/src/scanner.c.obj
+.PHONY : src/scanner.c.obj
+
+src/scanner.i: src/scanner.c.i
+.PHONY : src/scanner.i
+
+# target to preprocess a source file
+src/scanner.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Kura.dir\build.make CMakeFiles/Kura.dir/src/scanner.c.i
+.PHONY : src/scanner.c.i
+
+src/scanner.s: src/scanner.c.s
+.PHONY : src/scanner.s
+
+# target to generate assembly for a file
+src/scanner.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Kura.dir\build.make CMakeFiles/Kura.dir/src/scanner.c.s
+.PHONY : src/scanner.c.s
+
 src/value.obj: src/value.c.obj
 .PHONY : src/value.obj
 
@@ -293,6 +317,9 @@ help:
 	@echo ... src/memory.obj
 	@echo ... src/memory.i
 	@echo ... src/memory.s
+	@echo ... src/scanner.obj
+	@echo ... src/scanner.i
+	@echo ... src/scanner.s
 	@echo ... src/value.obj
 	@echo ... src/value.i
 	@echo ... src/value.s
