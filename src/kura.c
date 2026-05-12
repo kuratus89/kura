@@ -1,10 +1,20 @@
 #include "common.h"
 #include "chunk.h"
 #include "debug.h"
+#include "scanner.h"
+#include "token.h"
 #include "vm.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+interpretResult interpret(char* source){
+    scar scan = scanToPtr(source);
+    Tokens tokens;
+    tokenize(&scan , &tokens);
+    disassembleTokens(&tokens);
+    return INTERPRET_OK;
+}
 
 static char* readFile(const char* path){
     FILE* file = fopen(path , "rb");

@@ -13,4 +13,4 @@ typedef struct{
     scanPtr* pointers;
 }scar;
 
-void scanToPtr(char* source);
+scar scanToPtr(char* source);

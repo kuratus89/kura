@@ -49,9 +49,6 @@ bool stringScan(scanPtr* scan, scar* fs){
         scan->start=scan->end;
     }
     scan->end++;
-    scan->length = scan->end - scan->start;
-    pushScan(scan , fs);
-    scan->start = scan->end;
     while((*scan->end!='\0')&&(*scan->end!='"')){
         if(*scan->end=='\n')scan->line++;
         scan->end++;
@@ -60,13 +57,9 @@ bool stringScan(scanPtr* scan, scar* fs){
         printf("closing string not found");
         exit(10);
     }
-    scan->length = scan->end - scan->start;
-    pushScan(scan, fs);
-    scan->start =scan->end;
     scan->end++;
     scan->length = scan->end - scan->start;
     pushScan(scan , fs);
-    // scan->end++;
     scan->start = scan->end;
     return 1;
 }
@@ -84,7 +77,7 @@ bool charScan(scanPtr* scan , scar* fs){
 }
 
 void doubleSign(scanPtr* scan){
-    int doubleSign[14] = {'!' , '=' , '&' , '&' , '<' , '=' , '>' , '=' , '=' , '=' , '+' , '=' , '-' , '=' };
+    int doubleSign[] = {'!' , '=' , '&' , '&' , '<' , '=' , '>' , '=' , '=' , '=' , '+' , '=' , '-' , '=' };
     for(int i=0 ; i<14 ; i+=2){
         if((*scan->end==doubleSign[i])&&(*(scan->end+1)==doubleSign[i+1])){
             scan->end+=2;
@@ -94,7 +87,7 @@ void doubleSign(scanPtr* scan){
     scan->end++;
 }
 bool signs(scanPtr* scan , scar* fs){
-    int sign[19] = {'!' , '#', '%' , '&' , '(' , ')' , '*' , '+' , ',' , '-' , '/' , ';' , '<' , '=' , '>' , '[' , ']' , '{' ,'}'};
+    int sign[] = {'!' , '#', '%' , '&' , '(' , ')' , '*' , '+' , ',' , '-' , '/' , ';' , '<' , '=' , '>' , '[' , ']' , '{' ,'|','}' };
     if(find(sign  , (int) *scan->end , 19 , 1)==NULL)return 0;
 
     if(scan->end!=scan->start){
@@ -133,8 +126,7 @@ bool signs(scanPtr* scan , scar* fs){
     return 1;
 }
 
-
-void scanToPtr(char* source){
+scar scanToPtr(char* source){
     scar fs;
     initilizeScan(&fs);
     scanPtr scan;
@@ -151,11 +143,14 @@ void scanToPtr(char* source){
         exit(10);
     }
     if(scan.start!=scan.end){
-        scan.line = scan.end - scan.start;
+        scan.length = scan.end - scan.start;
         pushScan(&scan , &fs);
     }
-    disassembleScan(&fs);
-    
-
-
+    scan.start=NULL;
+    scan.end = NULL;
+    scan.length=0;
+    scan.line =-1;
+    pushScan(&scan , &fs);
+    return (fs);
 }
+

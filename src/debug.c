@@ -2,6 +2,7 @@
 #include "chunk.h"
 #include "value.h"
 #include "scanner.h"
+#include "token.h"
 #include <stdio.h>
 
 int printInstructer(const char* instruct , int offset){
@@ -39,7 +40,7 @@ void disassembleChunk(Chunk* chunk , const char* name){
 }
 
 void printScan(scanPtr* scan){
-    printf("line:%d " , (*scan).line);
+    printf("line:%d | size: %d |" , (*scan).line , (*scan).length);
     for(char* it =(*scan).start ;it!=(*scan).end ; it++)printf("%c" , (*it));
     printf("\n");
 }
@@ -49,5 +50,78 @@ void disassembleScan(scar* fs ){
     printf("%d scans found!\n" , cnt);
     for(int i=0 ; i<cnt ; i++){
         printScan(((*fs).pointers+i));
+    }
+}
+
+char* dissassembleTokenType(tokenType type){
+    switch(type){
+        //SINGLE DIGIT SIGNS
+        case TOKEN_LEFT_PAREN:        return("TOKEN_LEFT_PAREN");
+        case TOKEN_RIGHT_PAREN:       return("TOKEN_RIGHT_PAREN");
+        case TOKEN_LEFT_BRACE:        return("TOKEN_LEFT_BRACE");
+        case TOKEN_RIGHT_BRACE:       return("TOKEN_RIGHT_BRACE");
+        case TOKEN_LEFT_BRACKET:      return("TOKEN_LEFT_BRACKET");
+        case TOKEN_RIGHT_BRACKET:     return("TOKEN_RIGHT_BRACKET");
+        case TOKEN_COMMA:             return("TOKEN_COMMA");
+        case TOKEN_DOT:               return("TOKEN_DOT");
+        case TOKEN_STAR:              return("TOKEN_STAR");
+        case TOKEN_MINUS:             return("TOKEN_MINUS");
+        case TOKEN_PLUS:              return("TOKEN_PLUS");
+        case TOKEN_GREATER:           return("TOKEN_GREATER");
+        case TOKEN_LESSER:            return("TOKEN_LESSER");
+        case TOKEN_SLASH:             return("TOKEN_SLASH");
+        case TOKEN_SEMICOLON:         return("TOKEN_SEMICOLON");
+        case TOKEN_EQUAL:             return("TOKEN_EQUAL");
+        case TOKEN_HASH:              return("TOKEN_HASH");
+        case TOKEN_PERCENT:           return("TOKEN_PERCENT");
+        case TOKEN_BANG:              return("TOKEN_BANG");
+        case TOKEN_AND:               return("TOKEN_AND");
+        case TOKEN_OR:                return("TOKEN_OR");
+
+        //DOUBLE DIGIT SIGNS
+
+        case TOKEN_EQUAL_EQUAL:       return("TOKEN_EQUAL_EQUAL");
+        case TOKEN_GREATER_EQUAL:     return("TOKEN_GREATER_EQUAL");
+        case TOKEN_LESSER_EQUAL:      return("TOKEN_LESSER_EQUAL");
+        case TOKEN_AND_AND:           return("TOKEN_AND_AND");
+        case TOKEN_OR_OR:             return("TOKEN_OR_OR");
+        case TOKEN_BANG_EQUAL:        return("TOKEN_BANG_EQUAL");
+        case TOKEN_MINUS_EQUAL:       return("TOKEN_MINUS_EQUAL");
+        case TOKEN_PLUS_EQUAL:        return("TOKEN_PLUS_EQUAL");
+
+        //KEYWORDS AND LITRALS
+        case TOKEN_IDENTIFIER:        return("TOKEN_IDENTIFIER");
+        case TOKEN_STRING:            return("TOKEN_STRING");
+        case TOKEN_IF:                return("TOKEN_IF");
+        case TOKEN_ELSE:              return("TOKEN_ELSE");
+        case TOKEN_WHILE:             return("TOKEN_WHILE");
+        case TOKEN_RETURN:            return("TOKEN_RETURN");
+        case TOKEN_FOR:               return("TOKEN_FOR");
+        case TOKEN_BREAK:             return("TOKEN_BREAK");
+        case TOKEN_CONTINUE:          return("TOKEN_CONTINUE");
+        case TOKEN_TRUE:              return("TOKEN_TRUE");
+        case TOKEN_FALSE:             return("TOKEN_FALSE");
+        case TOKEN_INT:               return("TOKEN_INT");
+    
+        //OTHERS
+        case TOKEN_DATA:              return("TOKEN_DATA");
+        case TOKEN_NULL:              return("TOKEN_NULL");
+        case TOKEN_EXIT:              return("TOKEN_EXIT");
+        case TOKEN_EOL:               return("TOKEN_EOL");
+    }
+}
+
+void disassembleToken(Token* token){
+    printf("line %d | length %d |" , token->line , token->length);
+    printf("%s | " , dissassembleTokenType(token->type));
+    for(char* it = token->start ; it!=token->end ; it++)printf("%c" , *it);
+    printf("\n");
+}
+
+void disassembleTokens(Tokens* tokens){
+    Token* it = tokens->token;
+    while(it->line>0){
+        disassembleToken(it);
+        it++;
     }
 }

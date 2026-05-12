@@ -33,7 +33,7 @@ int* find(int* start, int value ,int length , bool isSort){
         mid = (low+high)/2;
         int* it = start+mid;
         if(value==*it)return it;
-        else if(value<*it)high = mid-1;
+        if(value<*it)high = mid-1;
         else low = mid+1;
     }
     return NULL;    

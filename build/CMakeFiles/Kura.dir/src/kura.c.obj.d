@@ -14,7 +14,7 @@ CMakeFiles/Kura.dir/src/kura.c.obj: D:\krishna\github\kura\src\kura.c \
  D:/krishna/mingw(c++\ compiler)/w64devkit/include/stdint.h \
  D:\krishna\github\kura\src\chunk.h D:\krishna\github\kura\src\value.h \
  D:\krishna\github\kura\src\debug.h D:\krishna\github\kura\src\scanner.h \
- D:\krishna\github\kura\src\vm.h \
+ D:\krishna\github\kura\src\token.h D:\krishna\github\kura\src\vm.h \
  D:/krishna/mingw(c++\ compiler)/w64devkit/include/stdio.h \
  D:/krishna/mingw(c++\ compiler)/w64devkit/include/corecrt_stdio_config.h \
  D:/krishna/mingw(c++\ compiler)/w64devkit/include/_mingw_off_t.h \

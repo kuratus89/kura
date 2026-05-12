@@ -16,4 +16,3 @@ typedef enum{
 
 void initilizeVM();
 void freeVM();
-interpretResult interpret(char* source);

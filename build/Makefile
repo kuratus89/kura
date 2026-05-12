@@ -248,6 +248,30 @@ src/scanner.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\Kura.dir\build.make CMakeFiles/Kura.dir/src/scanner.c.s
 .PHONY : src/scanner.c.s
 
+src/token.obj: src/token.c.obj
+.PHONY : src/token.obj
+
+# target to build an object file
+src/token.c.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Kura.dir\build.make CMakeFiles/Kura.dir/src/token.c.obj
+.PHONY : src/token.c.obj
+
+src/token.i: src/token.c.i
+.PHONY : src/token.i
+
+# target to preprocess a source file
+src/token.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Kura.dir\build.make CMakeFiles/Kura.dir/src/token.c.i
+.PHONY : src/token.c.i
+
+src/token.s: src/token.c.s
+.PHONY : src/token.s
+
+# target to generate assembly for a file
+src/token.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Kura.dir\build.make CMakeFiles/Kura.dir/src/token.c.s
+.PHONY : src/token.c.s
+
 src/value.obj: src/value.c.obj
 .PHONY : src/value.obj
 
@@ -320,6 +344,9 @@ help:
 	@echo ... src/scanner.obj
 	@echo ... src/scanner.i
 	@echo ... src/scanner.s
+	@echo ... src/token.obj
+	@echo ... src/token.i
+	@echo ... src/token.s
 	@echo ... src/value.obj
 	@echo ... src/value.i
 	@echo ... src/value.s

@@ -83,8 +83,3 @@ static interpretResult run(){
         }
     }
 }
-
-
-interpretResult interpret(char* source){
-    scanToPtr(source);
-}

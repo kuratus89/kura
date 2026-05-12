@@ -24,7 +24,7 @@ void writeChunk(Chunk* chunk , uint8_t byte , int line){
 }
 
 void freeChunk(Chunk* chunk){
-    freeArray(uint8_t , chunk , chunk->capacity);
+    freeArray(uint8_t , chunk->code , chunk->capacity);
     freeValueArray(&chunk->constants);
     freeArray(int , chunk->lines , chunk-> capacity);
     initilizeChunk(chunk);

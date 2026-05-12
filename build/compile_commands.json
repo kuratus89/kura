@@ -40,5 +40,11 @@
   "command": "\"D:\\krishna\\mingw(c++ compiler)\\w64devkit\\bin\\gcc.exe\"   -g -o CMakeFiles\\Kura.dir\\src\\scanner.c.obj -c D:\\krishna\\github\\kura\\src\\scanner.c",
   "file": "D:/krishna/github/kura/src/scanner.c",
   "output": "CMakeFiles/Kura.dir/src/scanner.c.obj"
+},
+{
+  "directory": "D:/krishna/github/kura/build",
+  "command": "\"D:\\krishna\\mingw(c++ compiler)\\w64devkit\\bin\\gcc.exe\"   -g -o CMakeFiles\\Kura.dir\\src\\token.c.obj -c D:\\krishna\\github\\kura\\src\\token.c",
+  "file": "D:/krishna/github/kura/src/token.c",
+  "output": "CMakeFiles/Kura.dir/src/token.c.obj"
 }
 ]
