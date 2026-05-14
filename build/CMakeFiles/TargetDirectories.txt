@@ -1,3 +1,0 @@
-D:/krishna/github/kura/build/CMakeFiles/Kura.dir
-D:/krishna/github/kura/build/CMakeFiles/edit_cache.dir
-D:/krishna/github/kura/build/CMakeFiles/rebuild_cache.dir
