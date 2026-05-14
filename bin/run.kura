@@ -1,2 +1,6 @@
 int x=10;
 string y = "hmm";
+
+func int main (int x){
+    int y = 20;
+}

@@ -3,7 +3,6 @@
 #include "value.h"
 #include "scanner.h"
 #include "token.h"
-#include <stdio.h>
 
 int printInstructer(const char* instruct , int offset){
     printf("%s\n" , instruct);
@@ -53,9 +52,10 @@ void disassembleScan(scar* fs ){
     }
 }
 
-char* dissassembleTokenType(tokenType type){
+char* disassembleTokenType(tokenType type){
     switch(type){
         //SINGLE DIGIT SIGNS
+        
         case TOKEN_LEFT_PAREN:        return("TOKEN_LEFT_PAREN");
         case TOKEN_RIGHT_PAREN:       return("TOKEN_RIGHT_PAREN");
         case TOKEN_LEFT_BRACE:        return("TOKEN_LEFT_BRACE");
@@ -85,11 +85,12 @@ char* dissassembleTokenType(tokenType type){
         case TOKEN_LESSER_EQUAL:      return("TOKEN_LESSER_EQUAL");
         case TOKEN_AND_AND:           return("TOKEN_AND_AND");
         case TOKEN_OR_OR:             return("TOKEN_OR_OR");
-        case TOKEN_BANG_EQUAL:        return("TOKEN_BANG_EQUAL");
+        case TOKEN_BANG_EQUAL:        return("TOKEN_BANG_EQAUL");
         case TOKEN_MINUS_EQUAL:       return("TOKEN_MINUS_EQUAL");
         case TOKEN_PLUS_EQUAL:        return("TOKEN_PLUS_EQUAL");
 
         //KEYWORDS AND LITRALS
+
         case TOKEN_IDENTIFIER:        return("TOKEN_IDENTIFIER");
         case TOKEN_STRING:            return("TOKEN_STRING");
         case TOKEN_IF:                return("TOKEN_IF");
@@ -102,8 +103,10 @@ char* dissassembleTokenType(tokenType type){
         case TOKEN_TRUE:              return("TOKEN_TRUE");
         case TOKEN_FALSE:             return("TOKEN_FALSE");
         case TOKEN_INT:               return("TOKEN_INT");
+        case TOKEN_FUNC:              return("TOKEN_FUNC");
     
         //OTHERS
+
         case TOKEN_DATA:              return("TOKEN_DATA");
         case TOKEN_NULL:              return("TOKEN_NULL");
         case TOKEN_EXIT:              return("TOKEN_EXIT");
@@ -111,17 +114,25 @@ char* dissassembleTokenType(tokenType type){
     }
 }
 
+
 void disassembleToken(Token* token){
-    printf("line %d | length %d |" , token->line , token->length);
-    printf("%s | " , dissassembleTokenType(token->type));
+    printf("line %d | length %d | %s | " , token->line , token->length , disassembleTokenType(token->type));
     for(char* it = token->start ; it!=token->end ; it++)printf("%c" , *it);
     printf("\n");
 }
 
 void disassembleTokens(Tokens* tokens){
     Token* it = tokens->token;
+    printf("<=== %s ===>\n" , tokens->name);
+    printf("Token count : %d \n Token capacity : %d\n Tokens :\n" , tokens->count , tokens->capacity);
     while(it->line>0){
         disassembleToken(it);
         it++;
     }
+}
+
+void disassembleFuncToken(tokenFunctions* tf){
+    printf("Number of non-global function : %d \n" , tf->count);
+    disassembleTokens(&tf->mainFunc);
+    for(int i=0 ; i<tf->count ; i++)disassembleTokens(tf->func+i);    
 }

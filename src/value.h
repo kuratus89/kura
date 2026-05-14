@@ -1,6 +1,12 @@
 #pragma once
 #include "common.h"
 
+typedef enum{
+    DATA_VOID ,
+    DATA_INT,
+    DATA_STRING,
+    DATA_BOOL
+}dataType;
 typedef double Value;
 
 typedef struct{

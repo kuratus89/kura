@@ -2,16 +2,46 @@
 #include "token.h"
 #include "memory.h"
 #include "scanner.h"
+#include "debug.h"
+
+char* tokenGetSource(Token* token){
+    char* val = NULL;
+    int cnt = token->length +1;
+    val = growArray(char , val , 0 , cnt);
+    cnt=0;
+    for(char* it = token->start ; it!=token->end; it++ , cnt++)val[cnt] = *it;
+    val[cnt] = '\0';
+    return val;
+}
+
+void tokenError(char* msg , Token* token){
+    printf("fail to tokenize at line : %d \ntoken type : %s \ntoken : %s \nerror : %s " ,token->line , disassembleTokenType(token->type) , tokenGetSource(token) ,  msg);
+    exit(56);
+}
 
 void iniTokens(Tokens* tokens , int count){
     tokens->count = 0;
-
+    tokens->capacity = count;
+    tokens->name = "Unknown Function";
     tokens->token = growArray(Token , NULL , 0 , count);    
 }
-void pushToken(Tokens* tokens , Token token){
-    *((tokens->token)+tokens->count)= token;
+
+void writeToken(Tokens* tokens , Token* token){
+    if(tokens->capacity == tokens->count){
+        int oldCap = tokens->capacity;
+        tokens->capacity = growCapacity(oldCap);
+        tokens->token = growArray(Token , tokens->token , oldCap , tokens->capacity);
+    }
+    tokens->token[tokens->count] = *token;
     tokens->count++;
 }
+
+void freeWasteToken(Tokens* tokens){
+    if(tokens->count==tokens->capacity)return;
+    growArray(Token , tokens->token , tokens->capacity , tokens->count);
+    tokens->capacity = tokens->count;
+}
+
 
 
 bool charGreater(char* starta , char* startb , char* endb){
@@ -38,6 +68,18 @@ bool tokenEqual(char* starta  , char* startb , char* endb){
     return 1;
 }
 
+bool tokenEqualString(Token* token , char* s){
+    char* a = token->start;
+    char* b = s;
+    while((a!=token->end)&&(*b!='\0')){
+        if(*a!=*b)return 0;
+        a++;
+        b++;
+    }
+    if((a!=token->end)||(*b!='\0'))return 0;
+    return 1;
+}
+
 bool tokenizeSingleDigitSign(Token* token){
     if(token->length!=1)return 0;   
     char value = *token->start;
@@ -47,7 +89,7 @@ bool tokenizeSingleDigitSign(Token* token){
     TOKEN_STAR , TOKEN_PLUS , TOKEN_COMMA , TOKEN_MINUS , TOKEN_SLASH , TOKEN_SEMICOLON , TOKEN_LESSER , TOKEN_EQUAL , TOKEN_GREATER ,
     TOKEN_LEFT_BRACKET , TOKEN_RIGHT_BRACKET , TOKEN_LEFT_BRACE , TOKEN_OR  , TOKEN_RIGHT_BRACE
     };
-    int* it = find(signs ,value , 19 , 1);
+    int* it = find(signs ,value , 20 , 1);
     if(it==NULL)return 0;
     int index = it - signs;
     token->type = singleDigitTokens[index];
@@ -59,7 +101,7 @@ bool tokenizeDoubleSign(Token* token){
     char value = *token->start;
     if(((value>='a')&&(value<='z'))||((value>='A')&&(value<='Z'))||((value>='0')&&(value<='9')))return 0;
     
-    int firstDigit[] = {'!' , '&' , '+' , '-' , '<' , '=' , '>' , '|'};
+    int firstDigit[] = {'!' , '&' , '+' , '-' , '<' , '=' , '>' , '|' };
     int secondDigit[] = {'=' , '&' , '=' , '=' , '=' , '=' , '=' , '|'} ;
     int* it = find(firstDigit ,  value , 8 , 1);
     if(it==NULL)return 0;
@@ -101,6 +143,7 @@ bool tokenizeKeywords(Token* token){
         "exit",
         "false",
         "for",
+        "func",
         "if",
         "return",
         "true",
@@ -109,11 +152,11 @@ bool tokenizeKeywords(Token* token){
     
     tokenType keyType[] = {
         TOKEN_NULL , TOKEN_BREAK , TOKEN_CONTINUE ,TOKEN_ELSE , TOKEN_EXIT , TOKEN_FALSE 
-        , TOKEN_FOR ,TOKEN_IF , TOKEN_RETURN , TOKEN_TRUE , TOKEN_WHILE
+        , TOKEN_FOR ,TOKEN_FUNC ,TOKEN_IF , TOKEN_RETURN , TOKEN_TRUE , TOKEN_WHILE
     };
     
     int low = 0;
-    int high = 10;
+    int high = 11;
     int mid;
     while(low<=high){
         mid = (low+high)/2;
@@ -139,6 +182,98 @@ bool tokenizeDataStructure(Token* token){
     return 0;
 }
 
+void iniTokenFunc(tokenFunctions* tf , int size){
+    tf->count =0;
+    tf->capacity = size;
+    tf->func = growArray(Tokens , NULL ,0 , size);
+    iniTokens(&tf->mainFunc , 0);
+}
+
+void freeTokenFunc(tokenFunctions* tf){
+    freeArray(Tokens , tf , tf->capacity);
+    tf->count=0;
+    tf->capacity=0;
+    iniTokens(&tf->mainFunc , 0);
+}
+
+void writeTokenFunc(tokenFunctions* tf , Tokens* tokens){
+    if(tf->count == tf->capacity){
+        int oldCap = tf->capacity;
+        tf->capacity = growCapacity(oldCap);
+        tf->func = growArray(Tokens , tf->func , oldCap , tf->capacity);
+    }
+    tf->func[tf->count] = *tokens;
+    tf->count++;
+}
+
+
+
+void functinize(Tokens* tokens, tokenFunctions* tf){
+    
+    Token* it = tokens->token;
+    iniTokenFunc(tf , 0);
+    tf->mainFunc.name = "Global Function";
+    Token eol;
+    eol.start = NULL;
+    eol.end = NULL;
+    eol.length = -1;
+    eol.line = -1;
+    eol.type = TOKEN_EOL;
+    while(it->length>0){
+        if(it->type==TOKEN_FUNC){
+            Tokens tokens;
+            iniTokens(&tokens , 0);
+            Token* start = it;
+            // while(it->type!=TOKEN_LEFT_BRACE){
+            //     if(it->length<0)tokenError("Invalid syntax for function" , start->line);
+            //     writeToken(&tokens , it);
+            //     it++;
+            // }
+            // writeToken(&tokens , it);
+            writeToken(&tokens , it);
+            it++;
+            if(it->type!=TOKEN_DATA)tokenError("Invalid Type : expected a valid data type" , it);
+            writeToken(&tokens , it);
+            it++;
+            if(it->type!=TOKEN_IDENTIFIER)tokenError("Invalid Type : expected a identifier" , it);
+            writeToken(&tokens , it);
+            tokens.name = tokenGetSource(it);
+            it++;
+            if(it->type!=TOKEN_LEFT_PAREN)tokenError("Invalid Type : expected left paren" , it);
+            writeToken(&tokens , it);
+            it++;
+            int bal=1;
+            while(bal){
+                if(it->length<0)tokenError("Invalid syntax for function :expected right paren" , it);
+                writeToken(&tokens , it);
+                if(it->type==TOKEN_LEFT_PAREN)bal++;
+                else if(it->type==TOKEN_RIGHT_PAREN)bal--;
+                it++;
+            }
+            bal=1;
+            if(it->type!=TOKEN_LEFT_BRACE)tokenError("Invalid syntax for function : expected left brace" , it);
+            it++;
+            while(bal){
+                if(it->length<0)tokenError("Invalid syntax for function : expected right brace" , it);
+                writeToken(&tokens , it);
+                if(it->type==TOKEN_LEFT_BRACE)bal++;
+                else if(it->type==TOKEN_RIGHT_BRACE)bal--;
+                it++;
+            }
+            writeToken(&tokens , &eol);
+            freeWasteToken(&tokens);
+            writeTokenFunc(tf , &tokens);
+            continue;
+        }
+        else {
+            writeToken(&tf->mainFunc , it);
+            it++;
+        }
+    }
+    writeToken(&tf->mainFunc , &eol);
+    freeWasteToken(&tf->mainFunc);
+}
+
 
 
 
@@ -161,13 +296,13 @@ void tokenize(scar* scan , Tokens* tokens){
         else if(tokenizeKeywords(&token));
         else token.type = TOKEN_IDENTIFIER;
 
-        pushToken(tokens , token);
+        writeToken(tokens , &token);
     }
-    token.start = sp->start;
-    token.end = sp->start;
-    token.line = sp->line;
-    token.length = sp->length;
+    token.start = NULL;
+    token.end = NULL;
+    token.length = -1;
+    token.line = -1;
     token.type = TOKEN_EOL;
-    pushToken(tokens , token);
-
+    writeToken(tokens , &token);
+    freeWasteToken(tokens);
 }

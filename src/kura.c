@@ -4,15 +4,17 @@
 #include "scanner.h"
 #include "token.h"
 #include "vm.h"
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 interpretResult interpret(char* source){
-    scar scan = scanToPtr(source);
+    scar scan; 
+    scanToPtr(source , &scan);
     Tokens tokens;
     tokenize(&scan , &tokens);
-    disassembleTokens(&tokens);
+    freeScan(&scan);
+    tokenFunctions tf;
+    functinize(&tokens , &tf);
+    disassembleFuncToken(&tf);
     return INTERPRET_OK;
 }
 

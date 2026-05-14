@@ -1,5 +1,6 @@
 #pragma once
 #include "scanner.h"
+#include "value.h"
 typedef enum{
     //SINGLE DIGIT SIGNS
     TOKEN_LEFT_PAREN , TOKEN_RIGHT_PAREN , 
@@ -22,7 +23,7 @@ typedef enum{
     TOKEN_IF , TOKEN_ELSE , TOKEN_WHILE ,
     TOKEN_RETURN , TOKEN_FOR , TOKEN_BREAK ,
     TOKEN_CONTINUE ,TOKEN_TRUE , TOKEN_FALSE,
-    TOKEN_INT ,
+    TOKEN_INT , TOKEN_FUNC ,
 
     // OTHERS
     TOKEN_DATA ,TOKEN_NULL , TOKEN_EXIT , TOKEN_EOL
@@ -41,7 +42,20 @@ typedef struct{
 
 typedef struct{
     int count;
+    int capacity;
     Token* token;
+    dataType returnValue;
+    char* name;
 }Tokens;
 
+
+
+typedef struct{
+    int count;
+    int capacity;
+    Tokens* func;
+    Tokens mainFunc;
+}tokenFunctions;
+
 void tokenize(scar* scan , Tokens* tokens);
+void functinize(Tokens* tokens , tokenFunctions* tf);

@@ -1,6 +1,5 @@
 #include "chunk.h"
 #include "vm.h"
-#include <stdio.h>
 #include "debug.h"
 #include "common.h"
 #include "scanner.h"
@@ -49,7 +48,7 @@ static interpretResult run(){
             disassembleInstruction(vm.chunk ,(int) (vm.ip - vm.chunk->code));
             
         #endif
-        uint8_t instruction ;
+        uint8_t instruction;
         switch(instruction = *vm.ip++){
             case OP_RETURN:{return INTERPRET_OK;}
             case OP_CONSTANT:{

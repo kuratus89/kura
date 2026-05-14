@@ -2,18 +2,23 @@
 #include "scanner.h"
 #include "memory.h"
 #include "debug.h"
-#include <stdio.h>
-#include <stdlib.h>
 
-void initilizeScan(scar* vak){
-    vak->capacity=0;
-    vak->count =0;
-    vak->pointers = NULL;
+void iniScan(scar* scan){
+    scan->capacity =0;
+    scan->count = 0;
+    scan->pointers = NULL;
 }
-void freeScan(scar* vak){
-    freeArray(scanPtr , vak->pointers , vak->capacity);
-    initilizeScan(vak);
+void freeScan(scar* scan){
+    freeArray(scanPtr , scan->pointers , scan->capacity);
+    iniScan(scan);
 }
+
+void freeWasteScan(scar* scan){
+    if(scan->count==scan->capacity)return;
+    growArray(scanPtr , scan->pointers , scan->capacity , scan->count);
+    scan->capacity = scan->count;
+}
+
 void pushScan(scanPtr* vok, scar* vak){
     if(vak->capacity - vak->count ==0){
         int oldCap = vak->capacity;
@@ -88,7 +93,7 @@ void doubleSign(scanPtr* scan){
 }
 bool signs(scanPtr* scan , scar* fs){
     int sign[] = {'!' , '#', '%' , '&' , '(' , ')' , '*' , '+' , ',' , '-' , '/' , ';' , '<' , '=' , '>' , '[' , ']' , '{' ,'|','}' };
-    if(find(sign  , (int) *scan->end , 19 , 1)==NULL)return 0;
+    if(find(sign  , (int) *scan->end , 20 , 1)==NULL)return 0;
 
     if(scan->end!=scan->start){
         scan->length =  scan->end - scan->start;
@@ -126,31 +131,30 @@ bool signs(scanPtr* scan , scar* fs){
     return 1;
 }
 
-scar scanToPtr(char* source){
-    scar fs;
-    initilizeScan(&fs);
+void scanToPtr(char* source , scar* fs){
+    iniScan(fs);
     scanPtr scan;
     scan.start = source;
     scan.end = source;
     scan.line = 1;
     while(*scan.end!='\0'){
-        if(spaceScan(&scan, &fs))continue;
-        if(stringScan(&scan, &fs))continue;
-        if(intScan(&scan , &fs))continue;
-        if(charScan(&scan , &fs))continue;
-        if(signs(&scan , &fs))continue;
+        if(spaceScan(&scan, fs))continue;
+        if(stringScan(&scan, fs))continue;
+        if(intScan(&scan , fs))continue;
+        if(charScan(&scan , fs))continue;
+        if(signs(&scan , fs))continue;
         printf("Invalid character :'%c'\n" , *scan.end);
         exit(10);
     }
     if(scan.start!=scan.end){
         scan.length = scan.end - scan.start;
-        pushScan(&scan , &fs);
+        pushScan(&scan , fs);
     }
     scan.start=NULL;
     scan.end = NULL;
     scan.length=0;
     scan.line =-1;
-    pushScan(&scan , &fs);
-    return (fs);
+    pushScan(&scan , fs);
+    freeWasteScan(fs);
 }
 

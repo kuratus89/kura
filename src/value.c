@@ -1,6 +1,6 @@
 #include "memory.h"
 #include "value.h"
-#include <stdio.h>
+#include "common.h"
 
 void initilizeValueArray(valueArray* array){
     array->count=0;

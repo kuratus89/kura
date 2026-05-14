@@ -1,6 +1,5 @@
 #include "common.h"
 #include "memory.h"
-#include "stdlib.h"
 
 int growCapacity(int oldCap){
     if(oldCap==0)return 8;
