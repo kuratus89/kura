@@ -2,12 +2,18 @@
 #include "common.h"
 
 typedef enum{
-    DATA_VOID ,
-    DATA_INT,
-    DATA_STRING,
-    DATA_BOOL
+    DATA_INT = 0,
+    DATA_STRING= 1,
+    DATA_BOOL = 2,
+    DATA_CHAR = 3 ,
+    DATA_FLOAT = 4,
+    DATA_VECTOR  = 5,
 }dataType;
-typedef double Value;
+
+typedef struct{
+    dataType type;
+    void* value;
+}Value;
 
 typedef struct{
     int capacity;

@@ -51,7 +51,7 @@ static interpretResult run(){
         uint8_t instruction;
         switch(instruction = *vm.ip++){
             case OP_RETURN:{return INTERPRET_OK;}
-            case OP_CONSTANT:{
+            case OP_LOAD:{
                 Value constant = vm.chunk->constants.values[*vm.ip++];
                 pushStackVM(constant);
                 break;

@@ -4,12 +4,14 @@
 
 typedef enum {
     OP_RETURN,
-    OP_CONSTANT,
+    OP_LOAD,
     OP_NEGATE,
     OP_ADD,
     OP_SUB,
     OP_MUL,
     OP_DIV,
+    OP_FLAG,
+    OP_GOTO,
 }opcode;
 
 typedef struct {
@@ -19,8 +21,12 @@ typedef struct {
     uint8_t* code;
     valueArray constants;
 }Chunk;
+typedef struct{
+    int count;
+    Chunk* func;
+    Chunk global;
+}funcByte;
 
 void initilizeChunk(Chunk* chunk);
 void writeChunk(Chunk* chunk , uint8_t byte , int line);
 void freeChunk(Chunk* chunk);
-int addConstant(Chunk* chunk , Value value);
