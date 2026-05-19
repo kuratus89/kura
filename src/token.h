@@ -23,7 +23,7 @@ typedef enum{
     TOKEN_IF , TOKEN_ELSE , TOKEN_WHILE ,
     TOKEN_RETURN , TOKEN_FOR , TOKEN_BREAK ,
     TOKEN_CONTINUE ,TOKEN_TRUE , TOKEN_FALSE,
-    TOKEN_INT , TOKEN_FUNC ,
+    TOKEN_INT , TOKEN_FUNC , TOKEN_FLOAT ,
 
     // OTHERS
     TOKEN_DATA ,TOKEN_NULL , TOKEN_EXIT , TOKEN_EOL
@@ -59,3 +59,4 @@ typedef struct{
 
 void tokenize(scar* scan , Tokens* tokens);
 void functinize(Tokens* tokens , tokenFunctions* tf);
+char* tokenGetSource(Token* token);

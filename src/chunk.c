@@ -39,5 +39,8 @@ int addConstantValue(Chunk* chunk , Value value){
 }
 
 int addConstant(Chunk* chunk , void* value , dataType type){
-    
+    Value val;
+    iniValue(&val , type);
+    writeValue(&val , value);
+    writeValueArray(&chunk->constants , val);
 }

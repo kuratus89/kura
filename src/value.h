@@ -25,3 +25,7 @@ void initilizeValueArray(valueArray* array);
 void writeValueArray(valueArray* array , Value value);
 void freeValueArray(valueArray* array);
 void printValue(Value value);
+
+void iniValue(Value* value , dataType type);
+void writeValue(Value* value , void* val);
+dataType getDataType(Token* token);

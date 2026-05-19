@@ -1,6 +1,7 @@
 #include "memory.h"
 #include "value.h"
 #include "common.h"
+#include "token.h"
 
 int dataSize[] = {4 , 0 , 1 , 4 ,0};
 
@@ -67,4 +68,12 @@ void (*dataWriteFunc[])(Value* , void*) = {writeValueInt , writeValueString , wr
 
 void writeValue(Value* value , void* val){
     dataWriteFunc[(int)value->type](value , val);
+}
+
+dataType getDataType(Token* token){
+    char* typeChar = tokenGetSource(token);
+    // will optimize later
+    char* dataTypesChar[] = {"int" , "string" , "bool" , "char" , "float" , "vector"};
+    
+    for(int i=0 ; i<6 ; i++)if(typeChar==dataTypesChar[i])return((dataType)i);
 }

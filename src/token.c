@@ -126,8 +126,16 @@ bool tokenizeString(Token* token){
 }
 
 bool tokenizeInt(Token* token){
-    for(char* it = token->start ; it!=token->end ; it++)if(((*it)>'9')||((*it)<'0'))return 0;
-    token->type = TOKEN_INT;
+    bool isfloat=0;
+    for(char* it = token->start ; it!=token->end ; it++){
+        if(((*it)=='.')&&(!isfloat)){
+            isfloat=1;
+            continue;
+        }
+        if(((*it)>'9')||((*it)<'0'))return 0;
+    }
+    if(isfloat)token->type= TOKEN_FLOAT;
+    else token->type = TOKEN_INT;
     return 1;
     
 }

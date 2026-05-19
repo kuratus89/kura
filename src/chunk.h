@@ -4,7 +4,7 @@
 
 typedef enum {
     OP_RETURN,
-    OP_LOAD,
+    OP_LOAD_CONSTANT,
     OP_NEGATE,
     OP_ADD,
     OP_SUB,
@@ -30,3 +30,4 @@ typedef struct{
 void initilizeChunk(Chunk* chunk);
 void writeChunk(Chunk* chunk , uint8_t byte , int line);
 void freeChunk(Chunk* chunk);
+void addConstant(Chunk* chunk , void* value , dataType type);
