@@ -32,7 +32,7 @@ typedef enum{
 
 
 
-typedef struct{
+typedef struct Token{
     int line;
     tokenType type;
     char* start;
@@ -40,7 +40,7 @@ typedef struct{
     int length;
 }Token;
 
-typedef struct{
+typedef struct Tokens{
     int count;
     int capacity;
     Token* token;
@@ -60,3 +60,4 @@ typedef struct{
 void tokenize(scar* scan , Tokens* tokens);
 void functinize(Tokens* tokens , tokenFunctions* tf);
 char* tokenGetSource(Token* token);
+bool tokenEqual(char* starta , char* startb , char* endb);

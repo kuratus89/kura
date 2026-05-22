@@ -3,6 +3,7 @@
 #include "memory.h"
 #include "scanner.h"
 #include "debug.h"
+#include "value.h"
 
 char* tokenGetSource(Token* token){
     char* val = NULL;

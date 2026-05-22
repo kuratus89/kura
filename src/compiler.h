@@ -10,7 +10,6 @@ typedef struct calcNode{
     Token* val;
 
     // if its not root(operator) , then we will use pointers to next nodes 
-    tokenType oper;
     struct calcNode* left;
     struct calcNode* right;
 }calcNode;
@@ -20,3 +19,5 @@ typedef struct{
     int capacity;
     calcNode* node;
 }Nodes;
+
+void compile(tokenFunctions* tf , funcByte* func);

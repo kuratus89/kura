@@ -1,6 +1,8 @@
 #pragma once
 #include "common.h"
 
+struct Token;
+
 typedef enum{
     DATA_INT = 0,
     DATA_STRING= 1,
@@ -22,10 +24,10 @@ typedef struct{
 }valueArray;
 
 void initilizeValueArray(valueArray* array);
-void writeValueArray(valueArray* array , Value value);
+void writeValueArray(valueArray* array , Value* value);
 void freeValueArray(valueArray* array);
-void printValue(Value value);
 
 void iniValue(Value* value , dataType type);
 void writeValue(Value* value , void* val);
-dataType getDataType(Token* token);
+dataType getDataType( struct Token* token);
+void insertDataToValue(struct Token* token , Value* value);

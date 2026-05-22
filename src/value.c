@@ -3,7 +3,7 @@
 #include "common.h"
 #include "token.h"
 
-int dataSize[] = {4 , 0 , 1 , 4 ,0};
+int dataSize[] = {4 , 0 , 1 , 1 , 4 ,0};
 
 void initilizeValueArray(valueArray* array){
     array->count=0;
@@ -11,19 +11,20 @@ void initilizeValueArray(valueArray* array){
     array->values = NULL;
 }
 
-void writeValueArray(valueArray* array , Value value){
+void writeValueArray(valueArray* array , Value* value){
     if(array->capacity - array->count ==0){
         int oldCap = array->capacity;
         array->capacity = growCapacity(array->capacity);
         array->values = growArray(Value , array->values , oldCap , array->capacity);
     }
-    array->values[array->count] = value;
+    array->values[array->count] = *value;
     array->count++;
 }
 
 void iniValue(Value* value , dataType type){
     value->type = type;
     int size = dataSize[(int)type];
+
     if(size==0){
         value->value = NULL;
         return;
@@ -31,14 +32,14 @@ void iniValue(Value* value , dataType type){
     value->value = malloc(size);
 }
 
-
-void freeValueArray(valueArray* array){
-    freeArray(Value , array->values , array->capacity);
-    initilizeValueArray(array);
+void freeValue(Value* value){
+    free(value->value);
 }
 
-void printValue(Value value){
-    printf("%g" , value);
+void freeValueArray(valueArray* array){
+    for(int i=0 ; i!=array->count ; i++)freeValue(&array->values[i]);
+    freeArray(Value , array->values , array->capacity);
+    initilizeValueArray(array);
 }
 
 void writeValueInt(Value* value , void* val){
@@ -70,7 +71,38 @@ void writeValue(Value* value , void* val){
     dataWriteFunc[(int)value->type](value , val);
 }
 
-dataType getDataType(Token* token){
+void tokenToInt(Token* token , void* val){
+    int i =0;
+    for(char* it = token->start ; ((it!=token->end)&&(*it!='.')) ; it++)i = (i*10)+ (*it - '0');
+    *(int*)val = i;
+}
+
+void tokenToString(Token* token , void* val){
+
+}
+
+void tokenToBool(Token* token , void* val){
+
+}
+
+void tokenToChar(Token* token , void* val){
+    
+}
+
+void tokenToFloat(Token* token , void* val){
+
+}
+
+void tokenToVector(Token* token , void* val){
+
+}
+void (*tokenToValFn[])(Token* , void*) = {tokenToInt , tokenToString , tokenToBool , tokenToChar , tokenToFloat , tokenToVector};
+
+void insertDataToValue(struct Token* token , Value* value){
+    tokenToValFn[(int)value->type](token , value->value);
+}
+
+dataType getDataType(struct Token* token){
     char* typeChar = tokenGetSource(token);
     // will optimize later
     char* dataTypesChar[] = {"int" , "string" , "bool" , "char" , "float" , "vector"};

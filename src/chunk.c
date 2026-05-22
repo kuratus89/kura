@@ -33,14 +33,12 @@ void freeWasteChunkCode(Chunk* chunk){
     
 }
 
-int addConstantValue(Chunk* chunk , Value value){
-    writeValueArray(&chunk->constants , value);
-    return chunk->constants.count -1;
-}
+
 
 int addConstant(Chunk* chunk , void* value , dataType type){
     Value val;
     iniValue(&val , type);
     writeValue(&val , value);
-    writeValueArray(&chunk->constants , val);
+    writeValueArray(&chunk->constants , &val);
+    return chunk->constants.count-1;
 }

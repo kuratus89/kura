@@ -7,7 +7,7 @@
 #include "compiler.h"
 
 void compileError(Token* token , char* msg){
-    printf("Error whiile compiling\nline: %d\ntoken type: %s\ntoken: %s" , token->line ,disassembleTokenType(token->type) , tokenGetSource(token));
+    printf("Error whiile compiling\n%s\nline: %d\ntoken type: %s\ntoken: %s" , msg , token->line ,disassembleTokenType(token->type) , tokenGetSource(token));
     exit(87);
 }
 
@@ -22,6 +22,15 @@ void iniNodes(Nodes* nodes){
     nodes->count = 0;
     nodes->node = NULL;
 }
+void iniNode(calcNode* node){
+    node->isleaf = NULL;
+    node->left = NULL;
+    node->right = NULL;
+    node->left = NULL;
+    node->parent = NULL;
+    node->val = NULL;
+}
+
 
 calcNode* writeNodes(Nodes* nodes , calcNode* node){
     if(nodes->capacity==nodes->count){
@@ -53,6 +62,7 @@ bool isValue(tokenType type){
     }
 }
 
+
 bool objValue(Token** tok , Value* val){
     Token* token = *tok;
 
@@ -60,117 +70,209 @@ bool objValue(Token** tok , Value* val){
     return (token->type == TOKEN_IDENTIFIER);
 }
 
-calcNode* buildBinTree(Token** tok , dataType type ,Nodes* nodes ){
-    Token* token = *tok;
-    bool braclo=0;
-    if(token->type==TOKEN_LEFT_PAREN){
-        braclo=1;
-        token++;
-    }
-    calcNode temp;
-    temp.parent = NULL;
-    temp.left = NULL;
-    temp.right = NULL;
-    temp.val = NULL;
-    temp.oper = NULL;
-    
-    calcNode* current = writeNodes(nodes , &temp);
+calcNode* buildBinTree(Token** tok , dataType type ,Nodes* nodes , bool fr){
+    Token* token = *tok;    
+    calcNode* current;
     Value tempVal;
+    bool bra=0;
+    if((token->type==TOKEN_LEFT_PAREN)&&(!fr)){
+        token++;
+        bra=1;
+    }
 
-    if(isOperator(token->type)){
+    if((token->type==TOKEN_LEFT_PAREN)){
+        current = buildBinTree(&token , type , nodes , 0);
+    }
+    else if(isOperator(token->type)){
+        calcNode temp;
+        iniNode(&temp);
+        current = writeNodes(nodes , &temp);
         current->isleaf=0;
-        current->oper = token->type;
-        calcNode tempop;
-        tempop.isleaf=1;
-        tempop.val = NULL;
-        current->left= writeNodes(nodes , &tempop);
+        current->val = token;
+        
+        current->left= writeNodes(nodes , &temp);
         token++;
         if(token->type==TOKEN_LEFT_PAREN){
-            current->right =  buildBinTree(&token , type , nodes);        
+            current->right =  buildBinTree(&token , type , nodes , 0); 
+            current->right->parent = current;  
+            // current = current->right;  
         }
-        else if(obj(token , &tempVal)){
-            if(!isValue(token->type))compileError(token , "expected a valid value");
+        else if(isValue(token->type)){
+            temp.val = token;
+            temp.isleaf = 1;
+            current->right = writeNodes(nodes , &temp);
+            current->right->parent = current;
+            // current = current->right;
+            token++;
         }
+        else if(objValue(&token , &tempVal)){
+            compileError(token , "identifier not yet supported");
+            token++;
+        }
+        else compileError(token , "Expected a valid value");
         
-        if(!isValue(token->type))compileError(token , "expected a valid value");
-        tempop.val = token;
-        current->right = writeNodes(nodes , &tempop);
-        token++;
     }
     else if(isValue(token->type)) {
-        current->isleaf =1;
-        current->val = token;
+        calcNode temp;
+        iniNode(&temp);
+        temp.isleaf = 1;
+        temp.val = token;
+        current = writeNodes(nodes , &temp);
         token++;
     }
     else if(objValue(&token , &tempVal)){
         compileError(token , "identifier not yet supported");
     }
+    else {
+        compileError(token , "Invalid syntax");
+    }
 
 
-    while((token->type !=TOKEN_EOL)&&(token->type != TOKEN_SEMICOLON)&&(token->type != TOKEN_RIGHT_PAREN)){
+    while((token->type !=TOKEN_EOL)&&(token->type != TOKEN_SEMICOLON)&&((fr)||(token->type!=TOKEN_RIGHT_PAREN))){
         if(!isOperator(token->type))compileError(token , "expected a valid operator");
         int cur = isOperator(token->type);
-        tokenType ty = token->type;
+        Token* ty = token;
         token++;
         while((current->parent != NULL)){
-            int par = isoperator(current->parent->oper);
+            int par = isOperator(current->parent->val->type);
             if(cur<=par){
                 current = current->parent;
             }
             else break;
         }
-        if(objValue(&token , &tempVal)){
+        calcNode rightNode;
+        iniNode(&rightNode);
+        if(token->type==TOKEN_LEFT_PAREN){
+            calcNode* ntr = buildBinTree(&token , type , nodes , 0);
+            rightNode = *ntr;
+        }
+        else if(objValue(&token , &tempVal)){
             compileError(token , "objects not yet supported");
             continue;
         }
-        
-        if(!isValue(token->type))compileError(token , "expected a valid value");
+        else if(isValue(token->type)){
+            rightNode.isleaf=1;
+            rightNode.val = token;
+            token++;
+        }
+        else compileError(token , "expected a valid value");
 
-        calcNode rightNode;
-        rightNode.isleaf=1;
-        rightNode.val = token;
+
         if(current->parent==NULL){
             calcNode newParent;
             newParent.isleaf=0;
             newParent.parent= NULL;
-            newParent.oper = ty;
+            newParent.val = ty;
             newParent.left = current;
-            newParent.right = writeNode(nodes , &rightNode);
+            newParent.right = writeNodes(nodes , &rightNode);
             current->parent = writeNodes(nodes , &newParent);
             current->parent->right->parent = current->parent;
             current = current->parent->right;
         }
         else {
+            
             calcNode newNode;
-            newNode.isleaf=0;
-            newNode.left = current;
+            iniNode(&newNode);
+            newNode.isleaf = 0;
+            newNode.val = ty;
             newNode.parent = current->parent;
-            newNode.oper = ty;
+            newNode.left = current;
             newNode.right = writeNodes(nodes , &rightNode);
-            current->parent->right = writeNodes(nodes , &newNode);
+
+            current->parent = writeNodes(nodes , &newNode);
+            current = current->parent;
+            current->parent->right = current;
+            current->right->parent = current;
+            current = current->right;
         }
 
     }
-    if(braclo){
+    if(bra){
         if(token->type!=TOKEN_RIGHT_PAREN)compileError(token , "right paren not found");
         token++;
     }
+    if(fr) while(!((token->type==TOKEN_SEMICOLON)||(token->type==TOKEN_EOL)))token++;
     while(current->parent!=NULL)current = current->parent;
     *tok = token;
     return current;
 }
 
-
-
-void Globalcollector(Token** tokenPtr , dataType type ){
-    
+int pushValue(Token* token ,  Chunk* chunk , dataType type){
+    Value value;
+    iniValue(&value , type);
+    insertDataToValue(token , &value);
+    writeValueArray(&chunk->constants , &value);
+    return chunk->constants.count -1;
 }
 
-void compileGlobal(Tokens* global , funcByte* func){
-    for(int i=0 ; i<global->count ; i++){
-        Token* it = global->token+i;
+void executeBinTree(calcNode* current , Chunk* chunk , dataType type){
+
+    if(current->isleaf){
+        writeChunk(chunk , OP_LOAD_CONSTANT , current->val->line);
+        int it = pushValue(current->val , chunk , type);
+        writeChunk(chunk , it , current->val->line);
+        return;
     }
-    global->
+    if(current->left->val==NULL){
+        if((current->val->type!=TOKEN_MINUS)&&(current->val->type!=TOKEN_PLUS))compileError(current->val , "Ivalid syntax");
+        executeBinTree(current->right , chunk , type);
+        writeChunk(chunk , OP_NEGATE , current->val->line);
+        return;
+    }
+    
+    executeBinTree(current->left , chunk , type);
+    executeBinTree(current->right , chunk , type);
+    opcode op;
+    switch(current->val->type){
+        case TOKEN_PLUS : op=OP_ADD;break;
+        case TOKEN_MINUS :op= OP_SUB;break;
+        case TOKEN_STAR : op = OP_MUL;break;
+        case TOKEN_SLASH : op = OP_DIV;break;
+    }
+    writeChunk(chunk , op , current->val->line);
+}
+
+dataType tokenToDataType(Token* token){
+    char* dataName = tokenGetSource(token);
+    char* dataChar[] = {"int" , "string" , "char" , "bool" , "float" , "vector"};
+    dataType dt[] = {DATA_INT , DATA_STRING , DATA_CHAR , DATA_BOOL , DATA_FLOAT , DATA_VECTOR};
+    
+    for(int i=0 ; i<7 ; i++)if(tokenEqual(dataChar[i] , token->start , token->end))return dt[i];
+    compileError(token , "Invalid data type");
+}
+
+void datastructures(Token** tok , Chunk* chunk){
+    Token* token = *tok;
+    dataType type = tokenToDataType(token);
+    // for now i am not storing the value as variable , and let it remain in vm's stack
+    token++;
+    if(token->type!=TOKEN_IDENTIFIER)compileError(token , "expected a identifier");
+    token++;
+    if(token->type!=TOKEN_EQUAL)compileError(token , "invalid syntax");
+    token++;
+    Nodes nodes;
+    iniNodes(&nodes);
+    int tokenCount = 0;
+    for(Token* t = token; (t->type != TOKEN_SEMICOLON) && (t->type != TOKEN_EOL); t++)tokenCount++;
+    nodes.capacity = tokenCount * 3 + 8;
+    nodes.node = growArray(calcNode, NULL, 0, nodes.capacity);
+    calcNode* current=buildBinTree(&token , type , &nodes , 1);
+    executeBinTree(current ,chunk , type);
+    *tok = token;
+}
+
+
+
+void compileGlobal(Tokens* global , funcByte* func){
+    
+    Token* it=global->token;
+    while(it->type!=TOKEN_EOL){
+        switch(it->type){
+            case TOKEN_DATA : datastructures(&it , &func->global);
+        }
+        while((it->type!=TOKEN_SEMICOLON)&&(it->type != TOKEN_EOL))it++;
+        if(it->type !=TOKEN_EOL)it++;
+    }    
 }
 
 void compile(tokenFunctions* tf , funcByte* func){

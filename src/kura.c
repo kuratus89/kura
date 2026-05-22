@@ -4,6 +4,7 @@
 #include "scanner.h"
 #include "token.h"
 #include "vm.h"
+#include "compiler.h"
 #include <string.h>
 
 interpretResult interpret(char* source){
@@ -14,7 +15,9 @@ interpretResult interpret(char* source){
     freeScan(&scan);
     tokenFunctions tf;
     functinize(&tokens , &tf);
-    disassembleFuncToken(&tf);
+    funcByte func;
+    compile(&tf ,&func );
+    disassembleChunk(&func.global , "global");
     return INTERPRET_OK;
 }
 
