@@ -1,13 +1,16 @@
 
 #include "Chunk.h"
 #include "memory.h"
+#include "compiler.h"
 #include "value.h"
 void initilizeChunk(Chunk* chunk){
     chunk->count = 0;
     chunk-> capacity = 0;
+    chunk->varCount = 0;
     chunk-> code = NULL;
     chunk-> lines = NULL;
     initilizeValueArray(&chunk->constants);
+    iniVarMaps(&chunk->vars);
 }
 
 void writeChunk(Chunk* chunk , uint8_t byte , int line){

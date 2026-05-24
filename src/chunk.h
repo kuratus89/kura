@@ -2,6 +2,7 @@
 #include "common.h"
 #include "value.h"
 
+
 typedef enum {
     OP_RETURN,
     OP_LOAD_CONSTANT,
@@ -13,8 +14,21 @@ typedef enum {
     OP_FLAG,
     OP_GOTO,
     OP_STORE,
-    OP_DECLARE
+    OP_DECLARE,
+    OP_LOAD_VAR,
 }opcode;
+
+typedef struct{
+    bool isValue;
+    int child[63];
+    int value;
+}varMap;
+
+typedef struct {
+    int count;
+    int capacity;
+    varMap* maps;
+}varMaps;
 
 typedef struct {
     int count;
@@ -22,8 +36,10 @@ typedef struct {
     int* lines;
     uint8_t* code;
     valueArray constants;
+    int varCount;
+    varMaps vars;
 }Chunk;
-typedef struct{
+typedef struct funcByte{
     int count;
     Chunk* func;
     Chunk global;

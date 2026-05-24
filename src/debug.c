@@ -3,84 +3,6 @@
 #include "value.h"
 #include "scanner.h"
 #include "token.h"
-
-int printInstructer(const char* instruct , int offset){
-    printf("%s\n" , instruct);
-    return offset+1;
-}
-
-void printValue(Value* value){
-    switch(value->type){
-        case DATA_BOOL:{ 
-            bool b = *(bool*)value->value;
-            if(b)printf("True");
-            else printf("False");
-            return;
-        }
-        case DATA_CHAR:{
-            char c = *(char*)value->value;
-            printf("%c" , c);
-            return;
-        }
-        case DATA_FLOAT:{
-            float f = *(float*)value->value;
-            printf("%f" , f);
-            return;
-        }
-        case DATA_INT : {
-            int i = *(int*)value->value;
-            printf("%d" , i);
-            return;
-        }
-    }
-}
-
-int constantInstruction(const char* name , Chunk* chunk , int offset){
-
-    uint8_t constant = chunk->code[offset +1];
-    printf("%-16s %4d '" , name , constant);
-    printValue(&chunk->constants.values[constant]);
-    printf("'\n");
-    return offset+2;
-}
-
-int disassembleInstruction(Chunk* chunk , int offset){
-    printf("%04d %d-> " , offset , chunk->lines[offset]);
-
-    uint8_t inst = chunk->code[offset];
-    switch(inst){
-        case OP_RETURN: return printInstructer("OP_RETURN" , offset);
-        case OP_LOAD_CONSTANT: return constantInstruction("OP_LOAD_CONSTANT" , chunk , offset);
-        case OP_ADD: return printInstructer("OP_ADD" , offset);
-        case OP_SUB : return printInstructer("OP_SUB" , offset);
-        case OP_MUL : return printInstructer("OP_MUL" , offset);
-        case OP_DIV : return printInstructer("OP_DIV" , offset);
-        case OP_NEGATE : return printInstructer("OP_NEGATE" , offset);
-        default : printf("Unknow opCode %d\n",inst);
-    }
-    return offset+1;
-
-}
-
-void disassembleChunk(Chunk* chunk , const char* name){
-    printf("<=== %s ===>\nCount -> %d\nCapacity -> %d\n\n" , name , chunk->count , chunk->capacity);
-    for(int offset=0 ; offset< chunk->count;)offset = disassembleInstruction(chunk , offset);
-}
-
-void printScan(scanPtr* scan){
-    printf("line:%d | size: %d |" , (*scan).line , (*scan).length);
-    for(char* it =(*scan).start ;it!=(*scan).end ; it++)printf("%c" , (*it));
-    printf("\n");
-}
-
-void disassembleScan(scar* fs ){
-    int cnt = (*fs).count;
-    printf("%d scans found!\n" , cnt);
-    for(int i=0 ; i<cnt ; i++){
-        printScan(((*fs).pointers+i));
-    }
-}
-
 char* disassembleTokenType(tokenType type){
     switch(type){
         //SINGLE DIGIT SIGNS
@@ -143,7 +65,113 @@ char* disassembleTokenType(tokenType type){
 
         
     }
+    return ("UNKNOW_TOKEN");
 }
+
+char* disassembleDataType(dataType type){
+    switch(type){
+        case DATA_BOOL : return ("DATA_BOOL");
+        case DATA_CHAR : return ("DATA_CHAR");
+        case DATA_FLOAT : return ("DATA_FLOAT");
+        case DATA_INT : return ("DATA_INT");
+        case DATA_STRING : return ("DATA_STRING");
+        case DATA_VECTOR : return ("DATA_VECTOR");
+    }
+    return("UNKNOW_DATA");
+}
+int printInstructer(const char* instruct , int offset){
+    printf("%s\n" , instruct);
+    return offset+1;
+}
+
+void printValue(Value* value){
+    switch(value->type){
+        case DATA_BOOL:{ 
+            bool b = *(bool*)value->value;
+            if(b)printf("True");
+            else printf("False");
+            return;
+        }
+        case DATA_CHAR:{
+            char c = *(char*)value->value;
+            printf("%c" , c);
+            return;
+        }
+        case DATA_FLOAT:{
+            float f = *(float*)value->value;
+            printf("%f" , f);
+            return;
+        }
+        case DATA_INT : {
+            int i = *(int*)value->value;
+            printf("%d" , i);
+            return;
+        }
+    }
+}
+
+int constantInstruction(const char* name , Chunk* chunk , int offset){
+
+    uint8_t constant = chunk->code[offset +1];
+    printf("%s %d '" , name , constant);
+    printValue(&chunk->constants.values[constant]);
+    printf("'\n");
+    return offset+2;
+}
+
+int declareInstruction(const char* name , Chunk* chunk , int offset){
+    uint8_t type = chunk->code[offset+1];
+    uint8_t varAdress = chunk->code[offset+2];
+    printf("%s Data type - %s Adress - %d\n" , name , disassembleDataType(type) , varAdress);
+    return offset+3;
+}
+
+int VarIoInstruction(const char* name , Chunk* chunk , int offset){
+    uint8_t varAdress = chunk->code[offset+1];
+    printf("%s Adress - %d\n" , name , varAdress);
+    return offset+2;
+}
+
+int disassembleInstruction(Chunk* chunk , int offset){
+    printf("%04d %d-> " , offset , chunk->lines[offset]);
+
+    uint8_t inst = chunk->code[offset];
+    switch(inst){
+        case OP_RETURN: return printInstructer("OP_RETURN" , offset);
+        case OP_LOAD_CONSTANT: return constantInstruction("OP_LOAD_CONSTANT" , chunk , offset);
+        case OP_ADD: return printInstructer("OP_ADD" , offset);
+        case OP_SUB : return printInstructer("OP_SUB" , offset);
+        case OP_MUL : return printInstructer("OP_MUL" , offset);
+        case OP_DIV : return printInstructer("OP_DIV" , offset);
+        case OP_NEGATE : return printInstructer("OP_NEGATE" , offset);
+        case OP_DECLARE : return declareInstruction("OP_DECLARE" , chunk ,offset);
+        case OP_STORE : return VarIoInstruction("OP_STORE_VAR" , chunk , offset);
+        case OP_LOAD_VAR : return VarIoInstruction("OP_LOAD_VAR" , chunk , offset);
+        default : printf("Unknow opCode %d\n",inst);
+    }
+    return offset+1;
+}
+
+void disassembleChunk(Chunk* chunk , const char* name){
+    printf("<=== %s ===>\nCount -> %d\nCapacity -> %d\n\n" , name , chunk->count , chunk->capacity);
+    for(int offset=0 ; offset< chunk->count;)offset = disassembleInstruction(chunk , offset);
+}
+
+void printScan(scanPtr* scan){
+    printf("line:%d | size: %d |" , (*scan).line , (*scan).length);
+    for(char* it =(*scan).start ;it!=(*scan).end ; it++)printf("%c" , (*it));
+    printf("\n");
+}
+
+void disassembleScan(scar* fs ){
+    int cnt = (*fs).count;
+    printf("%d scans found!\n" , cnt);
+    for(int i=0 ; i<cnt ; i++){
+        printScan(((*fs).pointers+i));
+    }
+}
+
+
 
 
 void disassembleToken(Token* token){

@@ -1,15 +1,12 @@
 #pragma once
 #include "value.h"
 #include "token.h"
+#include "chunk.h"
 
 typedef struct calcNode{
     bool isleaf;
     struct calcNode* parent;
-
-    // if its leaf , then we will access  its value
     Token* val;
-
-    // if its not root(operator) , then we will use pointers to next nodes 
     struct calcNode* left;
     struct calcNode* right;
 }calcNode;
@@ -20,4 +17,7 @@ typedef struct{
     calcNode* node;
 }Nodes;
 
-void compile(tokenFunctions* tf , funcByte* func);
+
+
+void compile(tokenFunctions* tf ,funcByte* func);
+void iniVarMaps(varMaps* maps);

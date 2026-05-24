@@ -31,12 +31,76 @@ void iniNode(calcNode* node){
     node->val = NULL;
 }
 
+void iniVarMap(varMap* map){
+    map->isValue = 0;
+    map->value = -1;
+    for(int i =0 ; i<62 ; i++)map->child[i] = -1;
+}
+
+
+int getMapInt(char c){
+    if((c>='a')&&(c<='z'))return (c - 'a');
+    if((c>='A')&&(c<='Z'))return (c - 'A' + 26);
+    if((c>='0')&&(c<='9'))return (c - '0' + 52);
+    if(c=='_')return (62);
+    return -1;
+}
+
+int writeVarMaps(varMaps* maps , varMap* map){
+    if(maps->count == maps->capacity){
+        int oldCap = maps->capacity;
+        maps->capacity = growCapacity(oldCap);
+        maps->maps = growArray(varMap , maps->maps ,oldCap , maps->capacity);
+    }
+    maps->maps[maps->count] = *map;
+    maps->count++;
+    return maps->count-1;
+}
+
+void iniVarMaps(varMaps* maps){
+    maps->capacity=0;
+    maps->count=0;
+    maps->maps = NULL;
+
+    varMap root;
+    iniVarMap(&root);
+    writeVarMaps(maps , &root);
+}
+
+
+void declareKeyValue(varMaps* maps , char* key , int value , Token* errorToken ){
+    int ma = 0;
+    for(char* it = key ; *it!='\0' ; it++){
+        int i = getMapInt(*it);
+        if(i<0)compileError(errorToken , "invalid character");
+        if(maps->maps[ma].child[i]<0){
+            varMap mao;
+            iniVarMap(&mao);
+            maps->maps[ma].child[i] = writeVarMaps(maps , &mao);
+        }
+        ma = maps->maps[ma].child[i];
+    }
+    if(maps->maps[ma].isValue)compileError(errorToken , "identifier already declared");
+    maps->maps[ma].isValue = 1;
+    maps->maps[ma].value = value;
+}
+
+int getKeyValue(varMaps* maps , char* key , Token* errorToken){
+    int ma = 0;
+    for(char* it = key ; *it!='\0' ; it++){
+        int i = getMapInt(*it);
+        if(i<0)compileError(errorToken , "invalid character");
+        if(maps->maps[ma].child[i]<0)compileError(errorToken , "identifier is not defined");
+        ma = maps->maps[ma].child[i];
+    }
+    if(! maps->maps[ma].isValue)compileError(errorToken , "identifier is not defined");
+    return maps->maps[ma].value;
+}
 
 calcNode* writeNodes(Nodes* nodes , calcNode* node){
     if(nodes->capacity==nodes->count){
-        int oldCap = nodes->capacity;
-        nodes->capacity= growCapacity(oldCap);
-        nodes->node = growArray(calcNode , nodes->node , oldCap , nodes->capacity);
+        printf("Error whiile compiling\ncrashed due to insufficient memory for nodes");
+        exit(26);
     }
     nodes->node[nodes->count] = *node;
     nodes->count++;
@@ -63,12 +127,12 @@ bool isValue(tokenType type){
 }
 
 
-bool objValue(Token** tok , Value* val){
-    Token* token = *tok;
+// bool objValue(Token** tok , Value* val){
+//     Token* token = *tok;
 
-    *tok = token;
-    return (token->type == TOKEN_IDENTIFIER);
-}
+//     *tok = token;
+//     return (token->type == TOKEN_IDENTIFIER);
+// }
 
 calcNode* buildBinTree(Token** tok , dataType type ,Nodes* nodes , bool fr){
     Token* token = *tok;    
@@ -105,9 +169,22 @@ calcNode* buildBinTree(Token** tok , dataType type ,Nodes* nodes , bool fr){
             // current = current->right;
             token++;
         }
-        else if(objValue(&token , &tempVal)){
-            compileError(token , "identifier not yet supported");
+        else if(token->type==TOKEN_IDENTIFIER){
+            temp.val = token;
+            temp.isleaf = 1;
+            current->right = writeNodes(nodes , &temp);
+            current->right->parent = current;
             token++;
+            bool balance = 0;
+            if(token->type==TOKEN_LEFT_PAREN){
+                token++;
+                balance =1;
+            }
+            while(balance){
+                if(token->type==TOKEN_LEFT_PAREN)balance++;
+                else if(token->type==TOKEN_RIGHT_PAREN)balance--;
+                token++;
+            }
         }
         else compileError(token , "Expected a valid value");
         
@@ -120,8 +197,23 @@ calcNode* buildBinTree(Token** tok , dataType type ,Nodes* nodes , bool fr){
         current = writeNodes(nodes , &temp);
         token++;
     }
-    else if(objValue(&token , &tempVal)){
-        compileError(token , "identifier not yet supported");
+    else if(token->type==TOKEN_IDENTIFIER){
+        calcNode temp;
+        iniNode(&temp);
+        temp.isleaf = 1;
+        temp.val = token;
+        current = writeNodes(nodes , &temp);
+        token++;
+        int balance = 0;
+        if(token->type==TOKEN_LEFT_PAREN){
+            balance =1;
+            token++;
+        }
+        while(balance){
+            if(token->type==TOKEN_LEFT_PAREN)balance++;
+            else if(token->type==TOKEN_RIGHT_PAREN)balance--;
+            token++;
+        }
     }
     else {
         compileError(token , "Invalid syntax");
@@ -146,14 +238,26 @@ calcNode* buildBinTree(Token** tok , dataType type ,Nodes* nodes , bool fr){
             calcNode* ntr = buildBinTree(&token , type , nodes , 0);
             rightNode = *ntr;
         }
-        else if(objValue(&token , &tempVal)){
-            compileError(token , "objects not yet supported");
-            continue;
-        }
+        
         else if(isValue(token->type)){
             rightNode.isleaf=1;
             rightNode.val = token;
             token++;
+        }
+        else if(token->type==TOKEN_IDENTIFIER){
+            rightNode.isleaf = 1;
+            rightNode.val = token;
+            token++;
+            int balance =0;
+            if(token->type==TOKEN_LEFT_PAREN){
+                balance=1;
+                token++;
+            }
+            while(balance){
+                if(token->type==TOKEN_LEFT_PAREN)balance++;
+                else if(token->type==TOKEN_RIGHT_PAREN)balance--;
+                token++;
+            }
         }
         else compileError(token , "expected a valid value");
 
@@ -205,23 +309,38 @@ int pushValue(Token* token ,  Chunk* chunk , dataType type){
     return chunk->constants.count -1;
 }
 
-void executeBinTree(calcNode* current , Chunk* chunk , dataType type){
+void executeBinTree(calcNode* current , Chunk* chunk , dataType type , varMaps* maps , bool global){
 
     if(current->isleaf){
-        writeChunk(chunk , OP_LOAD_CONSTANT , current->val->line);
-        int it = pushValue(current->val , chunk , type);
-        writeChunk(chunk , it , current->val->line);
+        if(current->val->type == TOKEN_IDENTIFIER){
+            Token* it = current->val;
+            it++;
+            if(it->type==TOKEN_LEFT_PAREN){// function  call
+                compileError(it , "function call not yet supported");
+            }
+            else {// variabale call
+                char* identifier = tokenGetSource(current->val);
+                int value = getKeyValue(maps , identifier , current->val);
+                writeChunk(chunk , OP_LOAD_VAR , current->val->line);
+                writeChunk(chunk , value , current->val->line);
+            }
+        }
+        else {
+            writeChunk(chunk , OP_LOAD_CONSTANT , current->val->line);
+            int it = pushValue(current->val , chunk , type);
+            writeChunk(chunk , it , current->val->line);
+        }
         return;
     }
     if(current->left->val==NULL){
         if((current->val->type!=TOKEN_MINUS)&&(current->val->type!=TOKEN_PLUS))compileError(current->val , "Ivalid syntax");
-        executeBinTree(current->right , chunk , type);
+        executeBinTree(current->right , chunk , type,  maps , global);
         writeChunk(chunk , OP_NEGATE , current->val->line);
         return;
     }
     
-    executeBinTree(current->left , chunk , type);
-    executeBinTree(current->right , chunk , type);
+    executeBinTree(current->left , chunk , type , maps , global);
+    executeBinTree(current->right , chunk , type , maps , global);
     opcode op;
     switch(current->val->type){
         case TOKEN_PLUS : op=OP_ADD;break;
@@ -241,12 +360,18 @@ dataType tokenToDataType(Token* token){
     compileError(token , "Invalid data type");
 }
 
-void datastructures(Token** tok , Chunk* chunk){
+void datastructures(Token** tok , Chunk* chunk , bool global){
     Token* token = *tok;
     dataType type = tokenToDataType(token);
-    // for now i am not storing the value as variable , and let it remain in vm's stack
     token++;
     if(token->type!=TOKEN_IDENTIFIER)compileError(token , "expected a identifier");
+    char* key = tokenGetSource(token);
+    declareKeyValue(&chunk->vars ,key , chunk->varCount , token );
+    int val = chunk->varCount;
+    chunk->varCount++;
+    writeChunk(chunk , OP_DECLARE , token->line);
+    writeChunk(chunk , type , token->line);
+    writeChunk(chunk , val , token->line);
     token++;
     if(token->type!=TOKEN_EQUAL)compileError(token , "invalid syntax");
     token++;
@@ -257,25 +382,28 @@ void datastructures(Token** tok , Chunk* chunk){
     nodes.capacity = tokenCount * 3 + 8;
     nodes.node = growArray(calcNode, NULL, 0, nodes.capacity);
     calcNode* current=buildBinTree(&token , type , &nodes , 1);
-    executeBinTree(current ,chunk , type);
+    executeBinTree(current ,chunk , type, &chunk->vars , global);
+
+    writeChunk(chunk , OP_STORE ,  token->line);
+    writeChunk(chunk , val , token->line);    
     *tok = token;
 }
 
 
 
-void compileGlobal(Tokens* global , funcByte* func){
+void compileGlobal(Tokens* global ,funcByte* func){
     
     Token* it=global->token;
     while(it->type!=TOKEN_EOL){
         switch(it->type){
-            case TOKEN_DATA : datastructures(&it , &func->global);
+            case TOKEN_DATA : datastructures(&it , &func->global , 1);
         }
         while((it->type!=TOKEN_SEMICOLON)&&(it->type != TOKEN_EOL))it++;
         if(it->type !=TOKEN_EOL)it++;
     }    
 }
 
-void compile(tokenFunctions* tf , funcByte* func){
+void compile(tokenFunctions* tf ,funcByte* func){
     iniFuncByte(func , tf->count);
     compileGlobal(&tf->mainFunc , func);
 }
