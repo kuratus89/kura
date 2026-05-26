@@ -3,6 +3,7 @@
 #include "value.h"
 #include "scanner.h"
 #include "token.h"
+#include "vm.h"
 char* disassembleTokenType(tokenType type){
     switch(type){
         //SINGLE DIGIT SIGNS
@@ -195,4 +196,14 @@ void disassembleFuncToken(tokenFunctions* tf){
     printf("Number of non-global function : %d \n" , tf->count);
     disassembleTokens(&tf->mainFunc);
     for(int i=0 ; i<tf->count ; i++)disassembleTokens(tf->func+i);    
+}
+
+void disassembleStackVM(VM* vm){
+    printf("Virtual Machine Stack |stack size - %d | VM run count - %d\n" ,vm->stackTop - vm->stack , vm->runCnt);
+    Value* it = vm->stack;
+    while(it!=vm->stackTop){
+        printValue(it);
+        printf("\n");
+        it++;
+    }
 }

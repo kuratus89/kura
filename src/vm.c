@@ -3,8 +3,15 @@
 #include "debug.h"
 #include "common.h"
 #include "scanner.h"
+#include "memory.h"
+#include "debug.h"
 VM vm;
 bool runVM;
+
+void debugVM(){
+    disassembleStackVM(&vm);
+}
+
 int getInstructionLine(){
     return (vm.currentFunc->ip - vm.currentFunc->chunk->code);
 }
@@ -31,13 +38,16 @@ static inline Feeder* pushNewFeed(Chunk* chunk , bool ini){
     vm.currentFunc->ip = chunk->code;
 
     initilizeValueArray(&vm.currentFunc->vars);
+    vm.currentFunc->vars.values = growArray(Value , vm.currentFunc->vars.values , 0 , vm.currentFunc->chunk->varCount+1);
+    vm.currentFunc->vars.capacity = vm.currentFunc->chunk->varCount+1;
     return vm.currentFunc;
 }
 
 
 void iniVM(Chunk* chunk){
     resetStack();
-    pushNewFeed(chunk , 1);    
+    pushNewFeed(chunk , 1);
+    vm.runCnt = 0;    
 }
 
 static inline Value* popStackVM(){
@@ -61,6 +71,7 @@ static inline Feeder* topFunc(){
 }
 
 static inline uint8_t* nextInstruction(){
+    vm.runCnt++;
     return topFunc()->ip++;
 }
 
@@ -184,9 +195,16 @@ interpretResult run(){
                 break;
             }
 
+            case OP_LOAD_VAR :{
+                int it = (int)*nextInstruction();
+                pushStackVM(&topFunc()->vars.values[it]);
+                break;
+            }
+
             case OP_STORE :{
                 int it = (int)*nextInstruction();
-                writeValueArrayIndex(&topFunc()->vars , topStackVM() , it);
+                Value* top = popStackVM();
+                writeValueArrayIndex(&topFunc()->vars , top , it);
                 break;
             }
 
@@ -201,7 +219,10 @@ interpretResult run(){
             }
 
         }
+        debugVM();
     }
 
     return (INTERPRET_OK);
 }
+
+

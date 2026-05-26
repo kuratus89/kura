@@ -1,2 +1,14 @@
-int x = (5+7)* 6 - 34 *(5-9);
-int y = (x+x)*x;
+int a = 10;
+int b = 20;
+int c = 5;
+int d = 2;
+
+int x = ((a + b) * c - (a / d)) + ((b - c) * (a + d));
+
+int y = (x * x) - ((a + b + c) * (d + 7));
+
+int z = ((y - x) * (a - c + d)) + ((x + y) / d);
+
+int result= (z * (a + b)) - ((x - y) * (c + d));
+
+int finalValue = ((result + z) * (x - a)) - ((y + b) * (c - d));

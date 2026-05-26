@@ -22,6 +22,7 @@ typedef struct{
     Value stack[STACK_MAX];
     Feeder* currentFunc;
     Value* stackTop;
+    int runCnt;
 }VM;
 
 
