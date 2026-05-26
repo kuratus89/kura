@@ -1,11 +1,30 @@
 #pragma once
 #include "chunk.h"
-typedef struct {
+
+# define FEED_MAX 256
+# define STACK_MAX 256
+
+// typedef struct {
+//     Chunk* chunk;
+//     uint8_t* ip;
+//     Value stack[256];
+//     Value* stackTop;
+// }VM;
+
+typedef struct{
     Chunk* chunk;
     uint8_t* ip;
-    Value stack[256];
+    valueArray vars;
+}Feeder;
+
+typedef struct{
+    Feeder feeds[FEED_MAX];
+    Value stack[STACK_MAX];
+    Feeder* currentFunc;
     Value* stackTop;
 }VM;
+
+
 
 
 typedef enum{
@@ -14,5 +33,5 @@ typedef enum{
     INTERPRET_RUNTIME_ERROR
 }interpretResult;
 
-void initilizeVM();
-void freeVM();
+void iniVM(Chunk* chunk);
+interpretResult run();

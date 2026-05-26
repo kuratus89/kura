@@ -11,7 +11,7 @@ add_executable(Kura
     src/memory.c
     src/chunk.c
     src/debug.c
-    # src/vm.c
+    src/vm.c
     src/scanner.c
     src/token.c
     src/compiler.c

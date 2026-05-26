@@ -15,6 +15,7 @@ typedef enum{
 typedef struct{
     dataType type;
     void* value;
+    size_t size;
 }Value;
 
 typedef struct{
@@ -25,11 +26,15 @@ typedef struct{
 
 
 
+
+
 void initilizeValueArray(valueArray* array);
-void writeValueArray(valueArray* array , Value* value);
+int writeValueArray(valueArray* array , Value* value);
+void writeValueArrayIndex(valueArray* array , Value* value , int index);
 void freeValueArray(valueArray* array);
 
 void iniValue(Value* value , dataType type);
 void writeValue(Value* value , void* val);
 dataType getDataType( struct Token* token);
 void insertDataToValue(struct Token* token , Value* value);
+ Value cloneValue(Value* value);

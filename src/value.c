@@ -2,6 +2,7 @@
 #include "value.h"
 #include "common.h"
 #include "token.h"
+#include <string.h>
 
 int dataSize[] = {4 , 0 , 1 , 1 , 4 ,0};
 
@@ -11,7 +12,7 @@ void initilizeValueArray(valueArray* array){
     array->values = NULL;
 }
 
-void writeValueArray(valueArray* array , Value* value){
+int writeValueArray(valueArray* array , Value* value){
     if(array->capacity - array->count ==0){
         int oldCap = array->capacity;
         array->capacity = growCapacity(array->capacity);
@@ -19,19 +20,39 @@ void writeValueArray(valueArray* array , Value* value){
     }
     array->values[array->count] = *value;
     array->count++;
+    return array->count-1;
 }
 
-void iniValue(Value* value , dataType type){
-    value->type = type;
-    int size = dataSize[(int)type];
+void writeValueArrayIndex(valueArray* array , Value* value , int index){
+    if(index>=array->capacity)return;
+    array->values[index] =*value;
+}
 
-    if(size==0){
+
+
+
+
+inline void iniValue(Value* value , dataType type){
+    value->type = type;
+    value->size = dataSize[(int)type];
+
+    if(value->size==0){
         value->value = NULL;
         return;
     }
-    value->value = malloc(size);
+    value->value = malloc(value->size);
+    // i will make stack and heap memory system later
 }
-
+inline Value cloneValue(Value* value){
+    Value val;
+    iniValue(&val , value->type);
+    if(!val.size){
+        val.value = NULL;
+        return val;
+    }
+    memcpy(val.value , value->value , val.size);
+    return val;
+}
 void freeValue(Value* value){
     free(value->value);
 }

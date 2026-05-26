@@ -42,6 +42,5 @@ int addConstant(Chunk* chunk , void* value , dataType type){
     Value val;
     iniValue(&val , type);
     writeValue(&val , value);
-    writeValueArray(&chunk->constants , &val);
-    return chunk->constants.count-1;
+    return writeValueArray(&chunk->constants , &val);
 }

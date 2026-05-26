@@ -305,8 +305,7 @@ int pushValue(Token* token ,  Chunk* chunk , dataType type){
     Value value;
     iniValue(&value , type);
     insertDataToValue(token , &value);
-    writeValueArray(&chunk->constants , &value);
-    return chunk->constants.count -1;
+    return writeValueArray(&chunk->constants , &value);
 }
 
 void executeBinTree(calcNode* current , Chunk* chunk , dataType type , varMaps* maps , bool global){
@@ -396,11 +395,16 @@ void compileGlobal(Tokens* global ,funcByte* func){
     Token* it=global->token;
     while(it->type!=TOKEN_EOL){
         switch(it->type){
-            case TOKEN_DATA : datastructures(&it , &func->global , 1);
+            case TOKEN_DATA :{
+                datastructures(&it , &func->global , 1);
+                break;
+            }
+            
         }
         while((it->type!=TOKEN_SEMICOLON)&&(it->type != TOKEN_EOL))it++;
         if(it->type !=TOKEN_EOL)it++;
-    }    
+    } 
+    writeChunk(&func->global , OP_EXIT , -1); 
 }
 
 void compile(tokenFunctions* tf ,funcByte* func){

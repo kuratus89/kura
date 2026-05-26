@@ -17,8 +17,8 @@ interpretResult interpret(char* source){
     functinize(&tokens , &tf);
     funcByte func;
     compile(&tf ,&func );
-    disassembleChunk(&func.global , "global");
-    return INTERPRET_OK;
+    iniVM(&func.global);
+    return (run());
 }
 
 static char* readFile(const char* path){
@@ -53,7 +53,7 @@ static void runFile(const char* path){
     char* source = readFile(path);
     interpretResult result = interpret(source);
     free(source);
-
+    
     if(result==INTERPRET_COMPILE_ERROR)exit(1);
     if(result==INTERPRET_RUNTIME_ERROR)exit(11);
 }
@@ -64,5 +64,6 @@ int main(int argc , const char* argv[]){
         exit(87);
     }
     runFile(argv[1]);
+    printf("success!");
     return 0;
 }
