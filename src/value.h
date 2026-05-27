@@ -10,6 +10,7 @@ typedef enum{
     DATA_CHAR = 3 ,
     DATA_FLOAT = 4,
     DATA_VECTOR  = 5,
+    DATA_VOID = 6,
 }dataType;
 
 typedef struct{

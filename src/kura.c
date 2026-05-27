@@ -17,6 +17,8 @@ interpretResult interpret(char* source){
     functinize(&tokens , &tf);
     funcByte func;
     compile(&tf ,&func );
+    disassembleFuncToken(&tf);
+    disassembleChunk(&func.global , "Global");
     iniVM(&func.global);
     return (run());
 }

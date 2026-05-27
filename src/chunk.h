@@ -16,13 +16,15 @@ typedef enum {
     OP_STORE,
     OP_DECLARE,
     OP_LOAD_VAR,
-    OP_EXIT
+    OP_EXIT,
+    OP_RETURN,
 }opcode;
 
 typedef struct{
     bool isValue;
     int child[63];
     int value;
+    dataType type;
 }varMap;
 
 typedef struct {
@@ -30,6 +32,11 @@ typedef struct {
     int capacity;
     varMap* maps;
 }varMaps;
+
+typedef struct{
+    dataType type;
+    int index;
+}parameter;
 
 typedef struct {
     int count;
@@ -39,11 +46,18 @@ typedef struct {
     valueArray constants;
     int varCount;
     varMaps vars;
+    dataType returnType;
+    parameter* paras;
+    int paraCount;
+    int paraCapacity;
 }Chunk;
 typedef struct funcByte{
     int count;
     Chunk* func;
     Chunk global;
+    int funcCount;
+    int funcCapacity;
+    
 }funcByte;
 
 void initilizeChunk(Chunk* chunk);

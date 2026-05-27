@@ -122,14 +122,14 @@ int constantInstruction(const char* name , Chunk* chunk , int offset){
 
 int declareInstruction(const char* name , Chunk* chunk , int offset){
     uint8_t type = chunk->code[offset+1];
-    uint8_t varAdress = chunk->code[offset+2];
-    printf("%s Data type - %s Adress - %d\n" , name , disassembleDataType(type) , varAdress);
+    uint8_t varAddress = chunk->code[offset+2];
+    printf("%s Data type - %s Address - %d\n" , name , disassembleDataType(type) , varAddress);
     return offset+3;
 }
 
 int VarIoInstruction(const char* name , Chunk* chunk , int offset){
-    uint8_t varAdress = chunk->code[offset+1];
-    printf("%s Adress - %d\n" , name , varAdress);
+    uint8_t varAddress = chunk->code[offset+1];
+    printf("%s Address - %d\n" , name , varAddress);
     return offset+2;
 }
 

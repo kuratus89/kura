@@ -68,7 +68,7 @@ void iniVarMaps(varMaps* maps){
 }
 
 
-void declareKeyValue(varMaps* maps , char* key , int value , Token* errorToken ){
+void declareKeyValue(varMaps* maps , char* key , int value , Token* errorToken , dataType type){
     int ma = 0;
     for(char* it = key ; *it!='\0' ; it++){
         int i = getMapInt(*it);
@@ -76,13 +76,15 @@ void declareKeyValue(varMaps* maps , char* key , int value , Token* errorToken )
         if(maps->maps[ma].child[i]<0){
             varMap mao;
             iniVarMap(&mao);
-            maps->maps[ma].child[i] = writeVarMaps(maps , &mao);
+            int newId = writeVarMaps(maps , &mao);
+            maps->maps[ma].child[i] = newId;
         }
         ma = maps->maps[ma].child[i];
     }
     if(maps->maps[ma].isValue)compileError(errorToken , "identifier already declared");
     maps->maps[ma].isValue = 1;
     maps->maps[ma].value = value;
+    maps->maps[ma].type = type;
 }
 
 int getKeyValue(varMaps* maps , char* key , Token* errorToken){
@@ -95,6 +97,30 @@ int getKeyValue(varMaps* maps , char* key , Token* errorToken){
     }
     if(! maps->maps[ma].isValue)compileError(errorToken , "identifier is not defined");
     return maps->maps[ma].value;
+}
+
+bool isKeyValue(varMaps* maps , char* key , Token* errorToken){
+    int ma = 0;
+    for(char* it = key ; *it!='\0' ; it++){
+        int i = getMapInt(*it);
+        if(i<0)compileError(errorToken , "invalid character");
+        if(maps->maps[ma].child[i]<0)return 0;
+        ma = maps->maps[ma].child[i];
+    }
+    if(maps->maps[ma].isValue)return 1;
+    else return 0;
+}
+
+dataType getDataTypeKeyValue(varMaps* maps , char* key , Token* errorToken){
+    int ma = 0 ;
+    for(char* it = key ; *it!='\0' ; it++){
+        int i = getMapInt(*it);
+        if(i<0)compileError(errorToken , "invalid character");
+        if(maps->maps[ma].child[i]<0)compileError(errorToken , "identifier is not defined");
+        ma = maps->maps[ma].child[i];
+    }
+    if(!maps->maps[ma].isValue)compileError(errorToken , "identifier is not defined");
+    return maps->maps[ma].type;
 }
 
 calcNode* writeNodes(Nodes* nodes , calcNode* node){
@@ -308,7 +334,7 @@ int pushValue(Token* token ,  Chunk* chunk , dataType type){
     return writeValueArray(&chunk->constants , &value);
 }
 
-void executeBinTree(calcNode* current , Chunk* chunk , dataType type , varMaps* maps , bool global){
+void executeBinTree(calcNode* current , Chunk* chunk , dataType type , varMaps* maps){
 
     if(current->isleaf){
         if(current->val->type == TOKEN_IDENTIFIER){
@@ -333,13 +359,13 @@ void executeBinTree(calcNode* current , Chunk* chunk , dataType type , varMaps* 
     }
     if(current->left->val==NULL){
         if((current->val->type!=TOKEN_MINUS)&&(current->val->type!=TOKEN_PLUS))compileError(current->val , "Ivalid syntax");
-        executeBinTree(current->right , chunk , type,  maps , global);
+        executeBinTree(current->right , chunk , type,  maps );
         writeChunk(chunk , OP_NEGATE , current->val->line);
         return;
     }
     
-    executeBinTree(current->left , chunk , type , maps , global);
-    executeBinTree(current->right , chunk , type , maps , global);
+    executeBinTree(current->left , chunk , type , maps );
+    executeBinTree(current->right , chunk , type , maps);
     opcode op;
     switch(current->val->type){
         case TOKEN_PLUS : op=OP_ADD;break;
@@ -358,14 +384,28 @@ dataType tokenToDataType(Token* token){
     for(int i=0 ; i<7 ; i++)if(tokenEqual(dataChar[i] , token->start , token->end))return dt[i];
     compileError(token , "Invalid data type");
 }
+void CompileReturn(Token** tok , Chunk* chunk){
+    Token* token = *tok;
+    token++;
+    Nodes nodes;
+    iniNodes(&nodes);
+    int tokenCount = 0;
+    for(Token* t = token; (t->type !=TOKEN_SEMICOLON)&&(t->type  != TOKEN_EOL) ; t++)tokenCount++;
+    nodes.capacity = tokenCount*3 +8;
+    nodes.node = growArray(calcNode , nodes.node , 0 , nodes.capacity);
+    calcNode* current = buildBinTree(&token ,chunk->returnType , &nodes , 1 );
+    executeBinTree(current , chunk , chunk->returnType , &chunk->vars);
+    writeChunk(chunk , OP_RETURN , token->line);
+    *tok = token;
+}
 
-void datastructures(Token** tok , Chunk* chunk , bool global){
+void datastructures(Token** tok , Chunk* chunk ){
     Token* token = *tok;
     dataType type = tokenToDataType(token);
     token++;
     if(token->type!=TOKEN_IDENTIFIER)compileError(token , "expected a identifier");
     char* key = tokenGetSource(token);
-    declareKeyValue(&chunk->vars ,key , chunk->varCount , token );
+    declareKeyValue(&chunk->vars ,key , chunk->varCount , token , type);
     int val = chunk->varCount;
     chunk->varCount++;
     writeChunk(chunk , OP_DECLARE , token->line);
@@ -381,12 +421,37 @@ void datastructures(Token** tok , Chunk* chunk , bool global){
     nodes.capacity = tokenCount * 3 + 8;
     nodes.node = growArray(calcNode, NULL, 0, nodes.capacity);
     calcNode* current=buildBinTree(&token , type , &nodes , 1);
-    executeBinTree(current ,chunk , type, &chunk->vars , global);
+    executeBinTree(current ,chunk , type, &chunk->vars);
 
     writeChunk(chunk , OP_STORE ,  token->line);
     writeChunk(chunk , val , token->line);    
     *tok = token;
 }
+
+void identifier(Token** tok , Chunk* chunk){
+    Token* token = *tok;
+    char* key = tokenGetSource(token);
+    int it = getKeyValue(&chunk->vars , key , token);
+    dataType type = getDataTypeKeyValue(&chunk->vars , key , token);
+    token++;
+    Token* sign = token;
+    token++;
+    switch(sign->type){
+        case TOKEN_EQUAL : {
+            Nodes nodes;
+            iniNodes(&nodes);
+            int cnt=0;
+            for(Token* t = token ; (t->type != TOKEN_SEMICOLON)&&(t->type != TOKEN_EOL) ; t++)cnt++;
+            nodes.capacity = cnt*3 + 8;
+            nodes.node = growArray(calcNode , NULL , 0 ,nodes.capacity);
+            calcNode* current = buildBinTree(&token ,type , &nodes , 1);
+            executeBinTree(current , chunk , type , &chunk->vars);
+        }
+    }
+    writeChunk(chunk , OP_STORE , token->line);
+    writeChunk(chunk , it , token->line);
+}
+
 
 
 
@@ -396,7 +461,11 @@ void compileGlobal(Tokens* global ,funcByte* func){
     while(it->type!=TOKEN_EOL){
         switch(it->type){
             case TOKEN_DATA :{
-                datastructures(&it , &func->global , 1);
+                datastructures(&it , &func->global);
+                break;
+            }
+            case TOKEN_IDENTIFIER :{
+                identifier(&it , &func->global);
                 break;
             }
             
@@ -404,10 +473,118 @@ void compileGlobal(Tokens* global ,funcByte* func){
         while((it->type!=TOKEN_SEMICOLON)&&(it->type != TOKEN_EOL))it++;
         if(it->type !=TOKEN_EOL)it++;
     } 
-    writeChunk(&func->global , OP_EXIT , -1); 
+    writeChunk(&func->global , OP_EXIT , -1);
 }
+
+void pushParameter(Chunk* chunk , parameter* pa){
+    if(chunk->paraCount == chunk->paraCapacity){
+        int oldCap = chunk->paraCapacity;
+        chunk->paraCapacity = growCapacity(oldCap);
+        chunk->paras = growArray(parameter , chunk->paras , oldCap , chunk->paraCapacity);
+    }
+    chunk->paras[chunk->paraCount] = *pa;
+    chunk->paraCount++;
+}
+
+void compileFunc(Tokens* tokens, funcByte* func , int globalVarCount){
+    Token* token = tokens->token;
+    Chunk chunk;
+    
+    initilizeChunk(&chunk);
+    chunk.varCount = globalVarCount;
+    token++;
+    if(token->type != TOKEN_DATA)compileError(token , "expected a valid data type");
+    dataType returnValue = tokenToDataType(token);
+    token++;
+    if(token->type != TOKEN_IDENTIFIER)compileError(token , "expected a valid identifier");
+    char* funcName = tokenGetSource(token);
+    token++;
+    if(token->type != TOKEN_LEFT_PAREN)compileError(token , "invalid syntax");
+    token++;
+    
+    if(token->type != TOKEN_RIGHT_PAREN){while(token->type != TOKEN_EOL){
+        parameter pa;
+        if(token->type != TOKEN_DATA)compileError(token , "expected a valid data type");
+        pa.type = tokenToDataType(token);
+        token++;
+        if(token->type != TOKEN_IDENTIFIER)compileError(token , "expected a valid identifier");
+        char* paraName = tokenGetSource(token);
+        pa.index = chunk.varCount;
+        declareKeyValue(&chunk.vars , paraName , chunk.varCount , token , pa.type);
+        pushParameter(&chunk , &pa);    
+        token++;
+        if(token->type == TOKEN_RIGHT_PAREN)break;
+        if(token->type != TOKEN_COMMA)compileError(token , "invalid syntax");
+        token++;
+        
+    }}
+    token++;
+    if(token->type != TOKEN_LEFT_BRACE)compileError(token , "invalid syntax");
+    int bal = 1;
+    Token* end = token;
+    token++;
+    while((bal)&&(end->type!=TOKEN_EOL)){
+        end++;
+        if(end->type==TOKEN_LEFT_BRACE)bal++;
+        else if(end->type==TOKEN_RIGHT_BRACE)bal--; 
+    }
+    if(end->type==TOKEN_EOL)compileError(token , "invalid syntax");
+    while(token!=end){
+        switch(token->type){
+            case TOKEN_DATA: {
+                datastructures(&token , &chunk);
+                break;
+            }
+            case TOKEN_IDENTIFIER :{
+                identifier(&token , &chunk);
+                break;
+            }
+            case TOKEN_RETURN :{
+                compileReturn(&token , &chunk);
+                break;
+            }
+        }
+        while((token!=end)&&(token->type != TOKEN_SEMICOLON))token++;
+        if(token!=end)token++;
+    }
+
+    if(func->funcCount==func->funcCapacity){
+        int oldCap = func->funcCapacity;
+        func->funcCapacity = growCapacity(oldCap);
+        func->func = growArray(Chunk , func->func , oldCap , func->funcCapacity);
+    }
+    func->func[func->funcCount] =chunk;
+    func->funcCount++;
+}
+// <=== add ===>
+// Token count : 23
+//  Token capacity : 23
+//  Tokens :
+// line 7 | length 4 | TOKEN_FUNC | func
+// line 7 | length 3 | TOKEN_DATA | int
+// line 7 | length 3 | TOKEN_IDENTIFIER | add
+// line 7 | length 1 | TOKEN_LEFT_PAREN | (
+// line 7 | length 3 | TOKEN_DATA | int
+// line 7 | length 1 | TOKEN_IDENTIFIER | a
+// line 7 | length 1 | TOKEN_COMMA | ,
+// line 7 | length 3 | TOKEN_DATA | int
+// line 7 | length 1 | TOKEN_IDENTIFIER | b
+// line 7 | length 1 | TOKEN_RIGHT_PAREN | )
+// line 7 | length 1 | TOKEN_LEFT_BRACE | {
+// line 8 | length 3 | TOKEN_DATA | int
+// line 8 | length 1 | TOKEN_IDENTIFIER | c
+// line 8 | length 1 | TOKEN_EQUAL | =
+// line 8 | length 1 | TOKEN_IDENTIFIER | a
+// line 8 | length 1 | TOKEN_PLUS | +
+// line 8 | length 1 | TOKEN_IDENTIFIER | b
+// line 8 | length 1 | TOKEN_SEMICOLON | ;
+// line 9 | length 6 | TOKEN_RETURN | return
+// line 9 | length 1 | TOKEN_IDENTIFIER | c
+// line 9 | length 1 | TOKEN_SEMICOLON | ;
+// line 10 | length 1 | TOKEN_RIGHT_BRACE | }
 
 void compile(tokenFunctions* tf ,funcByte* func){
     iniFuncByte(func , tf->count);
     compileGlobal(&tf->mainFunc , func);
+    for(int it=0 ; it!=tf->count ; it++)compileFunc(tf->func+it , func , func->global.varCount);
 }

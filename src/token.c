@@ -261,6 +261,7 @@ void functinize(Tokens* tokens, tokenFunctions* tf){
             }
             bal=1;
             if(it->type!=TOKEN_LEFT_BRACE)tokenError("Invalid syntax for function : expected left brace" , it);
+            writeToken(&tokens , it);
             it++;
             while(bal){
                 if(it->length<0)tokenError("Invalid syntax for function : expected right brace" , it);

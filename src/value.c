@@ -126,6 +126,6 @@ void insertDataToValue(struct Token* token , Value* value){
 dataType getDataType(struct Token* token){
     char* typeChar = tokenGetSource(token);
     // will optimize later
-    char* dataTypesChar[] = {"int" , "string" , "bool" , "char" , "float" , "vector"};
-    for(int i=0 ; i<6 ; i++)if(strcmp(typeChar , dataTypesChar[i]))return((dataType)i);
+    char* dataTypesChar[] = {"int" , "string" , "bool" , "char" , "float" , "vector" , "void"};
+    for(int i=0 ; i<7 ; i++)if(strcmp(typeChar , dataTypesChar[i]))return((dataType)i);
 }
