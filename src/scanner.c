@@ -15,7 +15,7 @@ void freeScan(scar* scan){
 
 void freeWasteScan(scar* scan){
     if(scan->count==scan->capacity)return;
-    growArray(scanPtr , scan->pointers , scan->capacity , scan->count);
+    scan->pointers = growArray(scanPtr , scan->pointers , scan->capacity , scan->count);
     scan->capacity = scan->count;
 }
 

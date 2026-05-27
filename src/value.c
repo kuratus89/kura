@@ -127,5 +127,5 @@ dataType getDataType(struct Token* token){
     char* typeChar = tokenGetSource(token);
     // will optimize later
     char* dataTypesChar[] = {"int" , "string" , "bool" , "char" , "float" , "vector" , "void"};
-    for(int i=0 ; i<7 ; i++)if(strcmp(typeChar , dataTypesChar[i]))return((dataType)i);
+    for(int i=0 ; i<7 ; i++)if(strcmp(typeChar , dataTypesChar[i])==0)return((dataType)i);
 }

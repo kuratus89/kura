@@ -56,6 +56,7 @@ char* disassembleTokenType(tokenType type){
         case TOKEN_FALSE:             return("TOKEN_FALSE");
         case TOKEN_INT:               return("TOKEN_INT");
         case TOKEN_FUNC:              return("TOKEN_FUNC");
+        case TOKEN_FLOAT:             return("TOKEN_FLOAT");
     
         //OTHERS
 

@@ -17,7 +17,6 @@ typedef enum {
     OP_DECLARE,
     OP_LOAD_VAR,
     OP_EXIT,
-    OP_RETURN,
 }opcode;
 
 typedef struct{

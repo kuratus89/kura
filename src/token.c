@@ -39,7 +39,7 @@ void writeToken(Tokens* tokens , Token* token){
 
 void freeWasteToken(Tokens* tokens){
     if(tokens->count==tokens->capacity)return;
-    growArray(Token , tokens->token , tokens->capacity , tokens->count);
+    tokens->token = growArray(Token , tokens->token , tokens->capacity , tokens->count);
     tokens->capacity = tokens->count;
 }
 
@@ -199,7 +199,7 @@ void iniTokenFunc(tokenFunctions* tf , int size){
 }
 
 void freeTokenFunc(tokenFunctions* tf){
-    freeArray(Tokens , tf , tf->capacity);
+    freeArray(Tokens , tf->func , tf->capacity);
     tf->count=0;
     tf->capacity=0;
     iniTokens(&tf->mainFunc , 0);
