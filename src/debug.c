@@ -130,7 +130,7 @@ int declareInstruction(const char* name , Chunk* chunk , int offset){
 
 int disassembleCallInstruction(const char* name , Chunk* chunk , int offset){
     uint8_t paraCount = chunk->code[offset+1];
-    printf("%s parameter count - %d\n" , name , paraCount);
+    printf("%s function - %d\n" , name , paraCount);
     return offset+2;
 }
 int VarIoInstruction(const char* name , Chunk* chunk , int offset){

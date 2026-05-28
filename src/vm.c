@@ -36,7 +36,6 @@ static inline Feeder* pushNewFeed(Chunk* chunk , bool ini){
     }
     vm.currentFunc->chunk = chunk;
     vm.currentFunc->ip = chunk->code;
-
     initilizeValueArray(&vm.currentFunc->vars);
     vm.currentFunc->vars.values = growArray(Value , vm.currentFunc->vars.values , 0 , vm.currentFunc->chunk->varCount+1);
     vm.currentFunc->vars.capacity = vm.currentFunc->chunk->varCount+1;
@@ -44,10 +43,12 @@ static inline Feeder* pushNewFeed(Chunk* chunk , bool ini){
 }
 
 
-void iniVM(Chunk* chunk){
+void iniVM(Chunk* chunk , Chunk* func){
     resetStack();
-    pushNewFeed(chunk , 1);
-    vm.runCnt = 0;    
+    pushNewFeed(chunk , 1 );
+    vm.runCnt = 0;  
+    vm.varFuncCount = 0; 
+    vm.Functions = func;
 }
 
 static inline Value* popStackVM(){
@@ -216,6 +217,10 @@ interpretResult run(){
             case OP_EXIT:{
                 runVM =0;
                 break;
+            }
+            case OP_CALL : {
+                int it = (int)*nextInstruction();
+                pushNewFeed(vm.Functions+it , 0);
             }
 
         }

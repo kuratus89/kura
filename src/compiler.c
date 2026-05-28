@@ -413,7 +413,8 @@ void compileCallFunction(Token** tok , Chunk* chunk , dataType type , funcByte* 
     }
     if(token->type != TOKEN_RIGHT_PAREN)compileError(token , "invalid syntax");
     writeChunk(chunk, OP_CALL , token->line);
-    writeChunk(chunk , cnk->paraCount , token->line);
+    writeChunk(chunk , it, token->line);
+    
     token++;
     *tok = token;
 }
@@ -545,12 +546,22 @@ void compileFunc(Tokens* tokens, funcByte* func ){
         pa.index = chunk.varCount;
         declareKeyValue(&chunk.vars , paraName , chunk.varCount , token , pa.type);
         chunk.varCount++;
-        pushParameter(&chunk , &pa);    
+        pushParameter(&chunk , &pa);
+        writeChunk(&chunk , OP_DECLARE , token->line);
+        writeChunk(&chunk , pa.type , token->line);
+        writeChunk(&chunk , pa.index , token->line);    
         token++;
         if(token->type != TOKEN_SEMICOLON)compileError(token , "invalid syntax");
         token++;
         if(token->type == TOKEN_RIGHT_PAREN)break;
+        
     }}
+
+    for(int i= chunk.paraCount -1 ; i>=0 ; i--){
+        parameter* para = chunk.paras+i;
+        writeChunk(&chunk , OP_STORE , token->line);
+        writeChunk(&chunk , para->index , token->line);                
+    }
     token++;
     if(token->type != TOKEN_LEFT_BRACE)compileError(token , "invalid syntax");
     int bal = 1;

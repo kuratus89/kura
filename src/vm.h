@@ -23,6 +23,8 @@ typedef struct{
     Feeder* currentFunc;
     Value* stackTop;
     int runCnt;
+    int varFuncCount;
+    Chunk* Functions;
 }VM;
 
 
