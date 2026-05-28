@@ -18,9 +18,10 @@ interpretResult interpret(char* source){
     funcByte func;
     compile(&tf ,&func );
     disassembleFuncToken(&tf);
-    disassembleChunk(&func.global , "Global");
-    iniVM(&func.global);
-    return (run());
+    disassembleFuncByte(&func);
+    // iniVM(&func.global);
+    // return (run());
+    return (INTERPRET_OK);
 }
 
 static char* readFile(const char* path){

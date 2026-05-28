@@ -16,6 +16,7 @@ typedef enum {
     OP_STORE,
     OP_DECLARE,
     OP_LOAD_VAR,
+    OP_CALL,
     OP_EXIT,
 }opcode;
 
@@ -41,6 +42,7 @@ typedef struct {
     int count;
     int capacity;
     int* lines;
+    char* name;
     uint8_t* code;
     valueArray constants;
     int varCount;
@@ -56,7 +58,7 @@ typedef struct funcByte{
     Chunk global;
     int funcCount;
     int funcCapacity;
-    
+    varMaps vars;
 }funcByte;
 
 void initilizeChunk(Chunk* chunk);

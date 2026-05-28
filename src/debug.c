@@ -128,6 +128,11 @@ int declareInstruction(const char* name , Chunk* chunk , int offset){
     return offset+3;
 }
 
+int disassembleCallInstruction(const char* name , Chunk* chunk , int offset){
+    uint8_t paraCount = chunk->code[offset+1];
+    printf("%s parameter count - %d\n" , name , paraCount);
+    return offset+2;
+}
 int VarIoInstruction(const char* name , Chunk* chunk , int offset){
     uint8_t varAddress = chunk->code[offset+1];
     printf("%s Address - %d\n" , name , varAddress);
@@ -149,6 +154,7 @@ int disassembleInstruction(Chunk* chunk , int offset){
         case OP_DECLARE : return declareInstruction("OP_DECLARE" , chunk ,offset);
         case OP_STORE : return VarIoInstruction("OP_STORE_VAR" , chunk , offset);
         case OP_LOAD_VAR : return VarIoInstruction("OP_LOAD_VAR" , chunk , offset);
+        case OP_CALL : return disassembleCallInstruction("OP_CALL" , chunk , offset);
         case OP_EXIT : return printInstructer("OP_EXIT" , offset);
         default : printf("Unknow opCode %d\n",inst);
     }
@@ -206,5 +212,12 @@ void disassembleStackVM(VM* vm){
         printValue(it);
         printf("\n");
         it++;
+    }
+}
+
+void disassembleFuncByte(funcByte* func){
+    disassembleChunk(&func->global , "global");
+    for(int i=0 ; i!=func->funcCount ; i++){
+        disassembleChunk((func->func + i) ,(func->func+i)->name);
     }
 }

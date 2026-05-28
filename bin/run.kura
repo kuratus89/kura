@@ -1,10 +1,5 @@
-int a = 10;
-int b = 20;
-
-a = a+b;
-b=a+9;
-
-func int add(int a , int b){
+func int add(int a ; int b;){
     int c = a+b;
     return c;
 }
+int x = add(5 ; 3;);

@@ -9,6 +9,10 @@ void initilizeChunk(Chunk* chunk){
     chunk->varCount = 0;
     chunk-> code = NULL;
     chunk-> lines = NULL;
+    chunk->paraCapacity =0;
+    chunk->paraCount =0;
+    chunk->paras = NULL;
+    chunk->returnType = DATA_VOID;
     initilizeValueArray(&chunk->constants);
     iniVarMaps(&chunk->vars);
 }
