@@ -221,6 +221,7 @@ interpretResult run(){
             case OP_CALL : {
                 int it = (int)*nextInstruction();
                 pushNewFeed(vm.Functions+it , 0);
+                break;
             }
 
         }

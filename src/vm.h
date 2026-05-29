@@ -36,5 +36,5 @@ typedef enum{
     INTERPRET_RUNTIME_ERROR
 }interpretResult;
 
-void iniVM(Chunk* chunk);
+void iniVM(Chunk* chunk , Chunk* func);
 interpretResult run();

@@ -165,7 +165,7 @@ bool isValue(tokenType type){
 
 
 
-calcNode* buildBinTree(Token** tok , dataType type ,Nodes* nodes , bool fr){
+calcNode* buildBinTree(Token** tok , dataType type ,Nodes* nodes , bool fr, bool comma ){
     Token* token = *tok;    
     calcNode* current;
     Value tempVal;
@@ -176,7 +176,7 @@ calcNode* buildBinTree(Token** tok , dataType type ,Nodes* nodes , bool fr){
     }
 
     if((token->type==TOKEN_LEFT_PAREN)){
-        current = buildBinTree(&token , type , nodes , 0);
+        current = buildBinTree(&token , type , nodes , 0 ,0);
     }
     else if(isOperator(token->type)){
         calcNode temp;
@@ -188,7 +188,7 @@ calcNode* buildBinTree(Token** tok , dataType type ,Nodes* nodes , bool fr){
         current->left= writeNodes(nodes , &temp);
         token++;
         if(token->type==TOKEN_LEFT_PAREN){
-            current->right =  buildBinTree(&token , type , nodes , 0); 
+            current->right =  buildBinTree(&token , type , nodes , 0,0); 
             current->right->parent = current;  
             // current = current->right;  
         }
@@ -251,7 +251,7 @@ calcNode* buildBinTree(Token** tok , dataType type ,Nodes* nodes , bool fr){
     }
 
 
-    while((token->type !=TOKEN_EOL)&&(token->type != TOKEN_SEMICOLON)&&((fr)||(token->type!=TOKEN_RIGHT_PAREN))){
+    while((token->type !=TOKEN_EOL)&&(token->type != TOKEN_SEMICOLON)&&((fr&& (!comma))||(token->type!=TOKEN_RIGHT_PAREN))&&((!comma)||(token->type !=TOKEN_COMMA))){
         if(!isOperator(token->type))compileError(token , "expected a valid operator");
         int cur = isOperator(token->type);
         Token* ty = token;
@@ -266,7 +266,7 @@ calcNode* buildBinTree(Token** tok , dataType type ,Nodes* nodes , bool fr){
         calcNode rightNode;
         iniNode(&rightNode);
         if(token->type==TOKEN_LEFT_PAREN){
-            calcNode* ntr = buildBinTree(&token , type , nodes , 0);
+            calcNode* ntr = buildBinTree(&token , type , nodes , 0 , 0);
             rightNode = *ntr;
         }
         
@@ -326,7 +326,7 @@ calcNode* buildBinTree(Token** tok , dataType type ,Nodes* nodes , bool fr){
         if(token->type!=TOKEN_RIGHT_PAREN)compileError(token , "right paren not found");
         token++;
     }
-    if(fr) while(!((token->type==TOKEN_SEMICOLON)||(token->type==TOKEN_EOL)))token++;
+    if(fr&& (!comma)) while(!((token->type==TOKEN_SEMICOLON)||(token->type==TOKEN_EOL)))token++;
     while(current->parent!=NULL)current = current->parent;
     *tok = token;
     return current;
@@ -401,14 +401,15 @@ void compileCallFunction(Token** tok , Chunk* chunk , dataType type , funcByte* 
     for(int i=0 ; i!=cnk->paraCount ; i++){
         dataType type = ((cnk->paras)+i)->type;
         int tokenCount =0;
-        for(Token* t = token ; (t->type!= TOKEN_SEMICOLON)&&(t->type !=TOKEN_EOL) ; t++)tokenCount++;
+        for(Token* t = token ; (t->type!= TOKEN_COMMA)&&(t->type !=TOKEN_EOL) ; t++)tokenCount++;
         Nodes nodes;
         iniNodes(&nodes);
         nodes.capacity = tokenCount*3 +8;
         nodes.node = growArray(calcNode , nodes.node , 0 , nodes.capacity);
-        calcNode* current = buildBinTree(&token ,type , &nodes , 1);
+        calcNode* current = buildBinTree(&token ,type , &nodes , 1,1);
         executeBinTree(current , chunk , type , &chunk->vars , func);
-        if(token->type !=TOKEN_SEMICOLON)compileError(token , "invalid syntax");
+        if(token->type == TOKEN_RIGHT_PAREN)break;
+        if(token->type !=TOKEN_COMMA)compileError(token , "invalid syntax");
         token++;
     }
     if(token->type != TOKEN_RIGHT_PAREN)compileError(token , "invalid syntax");
@@ -427,7 +428,7 @@ void compileReturn(Token** tok , Chunk* chunk , funcByte* func){
     for(Token* t = token; (t->type !=TOKEN_SEMICOLON)&&(t->type  != TOKEN_EOL) ; t++)tokenCount++;
     nodes.capacity = tokenCount*3 +8;
     nodes.node = growArray(calcNode , nodes.node , 0 , nodes.capacity);
-    calcNode* current = buildBinTree(&token ,chunk->returnType , &nodes , 1 );
+    calcNode* current = buildBinTree(&token ,chunk->returnType , &nodes , 1 , 0 );
     executeBinTree(current , chunk , chunk->returnType , &chunk->vars , func);
     writeChunk(chunk , OP_RETURN , token->line);
     *tok = token;
@@ -454,7 +455,7 @@ void datastructures(Token** tok , Chunk* chunk , funcByte* func){
     for(Token* t = token; (t->type != TOKEN_SEMICOLON) && (t->type != TOKEN_EOL); t++)tokenCount++;
     nodes.capacity = tokenCount * 3 + 8;
     nodes.node = growArray(calcNode, NULL, 0, nodes.capacity);
-    calcNode* current=buildBinTree(&token , type , &nodes , 1);
+    calcNode* current=buildBinTree(&token , type , &nodes , 1 , 0);
     executeBinTree(current ,chunk , type, &chunk->vars , func);
 
     writeChunk(chunk , OP_STORE ,  token->line);
@@ -478,7 +479,7 @@ void identifier(Token** tok , Chunk* chunk , funcByte* func){
             for(Token* t = token ; (t->type != TOKEN_SEMICOLON)&&(t->type != TOKEN_EOL) ; t++)cnt++;
             nodes.capacity = cnt*3 + 8;
             nodes.node = growArray(calcNode , NULL , 0 ,nodes.capacity);
-            calcNode* current = buildBinTree(&token ,type , &nodes , 1);
+            calcNode* current = buildBinTree(&token ,type , &nodes , 1 , 0);
             executeBinTree(current , chunk , type , &chunk->vars , func);
         }
     }
@@ -551,10 +552,9 @@ void compileFunc(Tokens* tokens, funcByte* func ){
         writeChunk(&chunk , pa.type , token->line);
         writeChunk(&chunk , pa.index , token->line);    
         token++;
-        if(token->type != TOKEN_SEMICOLON)compileError(token , "invalid syntax");
-        token++;
-        if(token->type == TOKEN_RIGHT_PAREN)break;
-        
+        if(token->type ==TOKEN_RIGHT_PAREN)break;
+        if(token->type != TOKEN_COMMA)compileError(token , "invalid syntax");
+        token++;        
     }}
 
     for(int i= chunk.paraCount -1 ; i>=0 ; i--){
