@@ -14,8 +14,11 @@ typedef enum {
     OP_FLAG,
     OP_GOTO,
     OP_STORE,
+    OP_STORE_LOCAL ,
+    OP_LOAD_VAR_LOCAL,
     OP_DECLARE,
     OP_LOAD_VAR,
+    OP_UNLOAD,
     OP_CALL,
     OP_EXIT,
 }opcode;

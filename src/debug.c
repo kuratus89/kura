@@ -153,7 +153,9 @@ int disassembleInstruction(Chunk* chunk , int offset){
         case OP_NEGATE : return printInstructer("OP_NEGATE" , offset);
         case OP_DECLARE : return declareInstruction("OP_DECLARE" , chunk ,offset);
         case OP_STORE : return VarIoInstruction("OP_STORE_VAR" , chunk , offset);
+        case OP_STORE_LOCAL : return VarIoInstruction("OP_STORE_VAR_LOCAL" , chunk , offset);
         case OP_LOAD_VAR : return VarIoInstruction("OP_LOAD_VAR" , chunk , offset);
+        case OP_LOAD_VAR_LOCAL : return VarIoInstruction("OP_LOAD_VAR_LOCAL" , chunk , offset);
         case OP_CALL : return disassembleCallInstruction("OP_CALL" , chunk , offset);
         case OP_EXIT : return printInstructer("OP_EXIT" , offset);
         default : printf("Unknow opCode %d\n",inst);

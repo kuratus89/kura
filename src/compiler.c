@@ -349,9 +349,20 @@ void executeBinTree(calcNode* current , Chunk* chunk , dataType type , varMaps* 
                 compileCallFunction(&current->val , chunk , type , func);
             }
             else {// variabale call
+                bool local;
                 char* identifier = tokenGetSource(current->val);
-                int value = getKeyValue(maps , identifier , current->val);
-                writeChunk(chunk , OP_LOAD_VAR , current->val->line);
+                if(isKeyValue(maps , identifier , current->val))local =1;
+                else local = 0;
+
+                int value;
+                if(local){
+                    value= getKeyValue(maps , identifier , current->val);
+                    writeChunk(chunk , OP_LOAD_VAR_LOCAL , current->val->line);
+                }
+                else {
+                    value = getKeyValue(&func->global.vars , identifier , current->val);
+                    writeChunk(chunk , OP_LOAD_VAR , current->val->line);
+                }
                 writeChunk(chunk , value , current->val->line);
             }
         }
@@ -392,9 +403,10 @@ dataType tokenToDataType(Token* token){
 void compileCallFunction(Token** tok , Chunk* chunk , dataType type , funcByte* func){
     Token* token = *tok;
     char* funcName = tokenGetSource(token);
-    if(type != getDataTypeKeyValue(&func->vars , funcName , token))compileError(token , "return type does not match with required data type");
+    if((type != DATA_VOID)&&(type != getDataTypeKeyValue(&func->vars , funcName , token)))compileError(token , "return type does not match with required data type");
     int it = getKeyValue(&func->vars , funcName , token);
     Chunk* cnk = func->func+ it;
+    type = cnk->returnType;
     token++;
     if(token->type != TOKEN_LEFT_PAREN)compileError(token , "invalid syntax");
     token++;
@@ -458,33 +470,91 @@ void datastructures(Token** tok , Chunk* chunk , funcByte* func){
     calcNode* current=buildBinTree(&token , type , &nodes , 1 , 0);
     executeBinTree(current ,chunk , type, &chunk->vars , func);
 
-    writeChunk(chunk , OP_STORE ,  token->line);
+    writeChunk(chunk , OP_STORE_LOCAL ,  token->line);
     writeChunk(chunk , val , token->line);    
     *tok = token;
 }
 
+// void identifier(Token** tok , Chunk* chunk , funcByte* func){
+//     Token* token = *tok;
+//     char* key = tokenGetSource(token);
+//     int it = getKeyValue(&chunk->vars , key , token);
+//     dataType type = getDataTypeKeyValue(&chunk->vars , key , token);
+//     token++;
+//     Token* sign = token;
+//     token++;
+//     switch(sign->type){
+//         case TOKEN_EQUAL : {
+//             Nodes nodes;
+//             iniNodes(&nodes);
+//             int cnt=0;
+//             for(Token* t = token ; (t->type != TOKEN_SEMICOLON)&&(t->type != TOKEN_EOL) ; t++)cnt++;
+//             nodes.capacity = cnt*3 + 8;
+//             nodes.node = growArray(calcNode , NULL , 0 ,nodes.capacity);
+//             calcNode* current = buildBinTree(&token ,type , &nodes , 1 , 0);
+//             executeBinTree(current , chunk , type , &chunk->vars , func);
+//         }
+//     }
+//     writeChunk(chunk , OP_STORE_LOCAL , token->line);
+//     writeChunk(chunk , it , token->line);
+// }
+
 void identifier(Token** tok , Chunk* chunk , funcByte* func){
     Token* token = *tok;
     char* key = tokenGetSource(token);
-    int it = getKeyValue(&chunk->vars , key , token);
-    dataType type = getDataTypeKeyValue(&chunk->vars , key , token);
-    token++;
-    Token* sign = token;
-    token++;
-    switch(sign->type){
-        case TOKEN_EQUAL : {
-            Nodes nodes;
-            iniNodes(&nodes);
-            int cnt=0;
-            for(Token* t = token ; (t->type != TOKEN_SEMICOLON)&&(t->type != TOKEN_EOL) ; t++)cnt++;
-            nodes.capacity = cnt*3 + 8;
-            nodes.node = growArray(calcNode , NULL , 0 ,nodes.capacity);
-            calcNode* current = buildBinTree(&token ,type , &nodes , 1 , 0);
-            executeBinTree(current , chunk , type , &chunk->vars , func);
+    if((token+1)->type==TOKEN_LEFT_PAREN){
+        compileCallFunction(&token , chunk , DATA_VOID , func);
+    }
+    else {
+        bool local;
+        if(isKeyValue(&chunk->vars , key , token))local=1;
+        else if(isKeyValue(&func->global.vars , key , token))local=0;
+        else getKeyValue(&chunk->vars , key , token); // compile error , coz key does not exist
+
+        if(local){
+            int it = getKeyValue(&chunk->vars , key , token);
+            dataType type = getDataTypeKeyValue(&chunk->vars , key , token);
+            token++;
+            Token* sign = token;
+            token++;
+            switch(sign->type){
+                case TOKEN_EQUAL : {
+                    Nodes nodes;
+                    iniNodes(&nodes);
+                    int cnt = 0;
+                    for(Token* t = token ; (t->type != TOKEN_SEMICOLON)&&(t->type !=TOKEN_EOL) ; t++)cnt++;
+                    nodes.capacity = cnt*3 +8;
+                    nodes.node = growArray(calcNode , NULL , 0 , nodes.capacity);
+                    calcNode* current = buildBinTree(&token , type ,&nodes , 1 , 0);
+                    executeBinTree(current, chunk ,type , &chunk->vars , func);
+                }
+            }
+            writeChunk(chunk , OP_STORE_LOCAL , token->line);
+            writeChunk(chunk , it , token->line);
+        }
+        else {
+            int it =getKeyValue(&func->global.vars , key , token);
+            dataType type = getDataTypeKeyValue(&func->global.vars , key , token);
+            token++;
+            Token* sign = token;
+            token++;
+            switch(sign->type){
+                case TOKEN_EQUAL :{
+                    Nodes nodes;
+                    iniNodes(&nodes);
+                    int cnt = 0;
+                    for(Token* t = token ; (t->type != TOKEN_SEMICOLON)&& (t->type != TOKEN_EOL); t++)cnt++;
+                    nodes.capacity = cnt*3 +8;
+                    nodes.node = growArray(calcNode , NULL , 0 , nodes.capacity);
+                    calcNode* current = buildBinTree(&token , type , &nodes ,1 , 0);
+                    executeBinTree(current , chunk , type , &func->global.vars , func);
+                }
+            }
+            writeChunk(chunk , OP_STORE , token->line);
+            writeChunk(chunk , it , token->line);
         }
     }
-    writeChunk(chunk , OP_STORE , token->line);
-    writeChunk(chunk , it , token->line);
+    *tok = token;
 }
 
 
@@ -523,46 +593,13 @@ void pushParameter(Chunk* chunk , parameter* pa){
 
 void compileFunc(Tokens* tokens, funcByte* func ){
     Token* token = tokens->token;
-    Chunk chunk;
-    
-    initilizeChunk(&chunk);
     token++;
-    if(token->type != TOKEN_DATA)compileError(token , "expected a valid data type");
-    dataType returnValue = tokenToDataType(token);
     token++;
     if(token->type != TOKEN_IDENTIFIER)compileError(token , "expected a valid identifier");
     char* funcName = tokenGetSource(token);
-    chunk.name = funcName;
-    token++;
-    if(token->type != TOKEN_LEFT_PAREN)compileError(token , "invalid syntax");
-    token++;
-    
-    if(token->type != TOKEN_RIGHT_PAREN){while(token->type != TOKEN_EOL){
-        parameter pa;
-        if(token->type != TOKEN_DATA)compileError(token , "expected a valid data type");
-        pa.type = tokenToDataType(token);
-        token++;
-        if(token->type != TOKEN_IDENTIFIER)compileError(token , "expected a valid identifier");
-        char* paraName = tokenGetSource(token);
-        pa.index = chunk.varCount;
-        declareKeyValue(&chunk.vars , paraName , chunk.varCount , token , pa.type);
-        chunk.varCount++;
-        pushParameter(&chunk , &pa);
-        writeChunk(&chunk , OP_DECLARE , token->line);
-        writeChunk(&chunk , pa.type , token->line);
-        writeChunk(&chunk , pa.index , token->line);    
-        token++;
-        if(token->type ==TOKEN_RIGHT_PAREN)break;
-        if(token->type != TOKEN_COMMA)compileError(token , "invalid syntax");
-        token++;        
-    }}
-
-    for(int i= chunk.paraCount -1 ; i>=0 ; i--){
-        parameter* para = chunk.paras+i;
-        writeChunk(&chunk , OP_STORE , token->line);
-        writeChunk(&chunk , para->index , token->line);                
-    }
-    token++;
+    int it = getKeyValue(&func->vars , funcName , token);
+    Chunk* chunk = func->func+it;
+    while((token->type !=TOKEN_LEFT_BRACE)&&(token->type != TOKEN_EOL))token++;    
     if(token->type != TOKEN_LEFT_BRACE)compileError(token , "invalid syntax");
     int bal = 1;
     Token* end = token;
@@ -576,15 +613,15 @@ void compileFunc(Tokens* tokens, funcByte* func ){
     while(token!=end){
         switch(token->type){
             case TOKEN_DATA: {
-                datastructures(&token , &chunk, func);
+                datastructures(&token , chunk, func);
                 break;
             }
             case TOKEN_IDENTIFIER :{
-                identifier(&token , &chunk, func);
+                identifier(&token , chunk, func);
                 break;
             }
             case TOKEN_RETURN :{
-                compileReturn(&token , &chunk , func);
+                compileReturn(&token , chunk , func);
                 break;
             }
         }
@@ -592,19 +629,66 @@ void compileFunc(Tokens* tokens, funcByte* func ){
         if(token!=end)token++;
     }
 
-    if(func->funcCount==func->funcCapacity){
-        int oldCap = func->funcCapacity;
-        func->funcCapacity = growCapacity(oldCap);
-        func->func = growArray(Chunk , func->func , oldCap , func->funcCapacity);
+
+    
+}
+
+void declareFunc(Tokens* tokens , funcByte* func){
+    Token* token = tokens->token;
+    Chunk chunk;
+    initilizeChunk(&chunk);
+    token++;
+    if(token->type != TOKEN_DATA)compileError(token , "expected a valid data type");
+    dataType returnValue = tokenToDataType(token);
+    token++;
+    if(token->type != TOKEN_IDENTIFIER)compileError(token , "expected a valid identifier");
+    char* funcName = tokenGetSource(token);
+    chunk.name = funcName;
+    token++;
+    if(token->type != TOKEN_LEFT_PAREN)compileError(token , "invalid syntax");
+    token++;
+
+    if(token->type != TOKEN_RIGHT_PAREN){
+        while(token->type != TOKEN_EOL){
+            parameter pa;
+            if(token->type  != TOKEN_DATA)compileError(token , "expected a valid data type");
+            pa.type = tokenToDataType(token);
+            token++;
+            if(token->type != TOKEN_IDENTIFIER) compileError(token , "expected a valid identifier");
+            char* paraName = tokenGetSource(token);
+            pa.index = chunk.varCount;
+            declareKeyValue(&chunk.vars , paraName , chunk.varCount ,token , pa.type);
+            chunk.varCount++;
+            pushParameter(&chunk , &pa);
+            writeChunk(&chunk , OP_DECLARE , token->line);
+            writeChunk(&chunk , pa.type , token->line);
+            writeChunk(&chunk , pa.index , token->line);
+            token++;
+            if(token->type== TOKEN_RIGHT_PAREN)break;
+            if(token->type!=TOKEN_COMMA)compileError(token , "invalid syntax");
+            token++;
+        }
     }
-    declareKeyValue(&func->vars , funcName , func->funcCount , tokens->token , returnValue );
-    func->func[func->funcCount] =chunk;
+    for(int i =chunk.paraCount -1 ; i>=0 ; i--){
+        parameter* para = chunk.paras+i;
+        writeChunk(&chunk , OP_STORE_LOCAL , token->line);
+        writeChunk(&chunk , para->index , token->line);
+    }
+
+    declareKeyValue(&func->vars , funcName , func->funcCount, tokens->token , returnValue );
+    if(func->funcCount == func->funcCapacity){
+        int oldCap = func->funcCapacity;
+        func->funcCapacity =  growCapacity(oldCap);
+        func->func =growArray(Chunk , func->func , oldCap , func->funcCapacity);
+    }
+    func->func[func->funcCount] = chunk;
     func->funcCount++;
 }
 
 
 void compile(tokenFunctions* tf ,funcByte* func){
     iniFuncByte(func , tf->count);
-    for(int it=0 ; it!=tf->count ; it++)compileFunc(tf->func+it , func);
+    for(int it=0 ; it!=tf->count ; it++)declareFunc(tf->func+it , func);
     compileGlobal(&tf->mainFunc , func);
+    for(int it=0 ; it!=tf->count ; it++)compileFunc(tf->func+it , func);
 }

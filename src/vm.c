@@ -23,9 +23,10 @@ void resetStack(){
     vm.stackTop = vm.stack;
 }
 
-static inline Feeder* pushNewFeed(Chunk* chunk , bool ini){
+static inline Feeder* pushNewFeed(Chunk* chunk , bool ini, int varsCount){
     if(ini){
         vm.currentFunc = vm.feeds;
+        vm.currentFunc->varsCount =0;
     }
     else {
         if((vm.currentFunc - vm.feeds)+ 1 >= FEED_MAX){
@@ -33,19 +34,21 @@ static inline Feeder* pushNewFeed(Chunk* chunk , bool ini){
             return NULL;
         }
         vm.currentFunc++;
+        vm.currentFunc->varsCount = varsCount;
     }
     vm.currentFunc->chunk = chunk;
     vm.currentFunc->ip = chunk->code;
-    initilizeValueArray(&vm.currentFunc->vars);
-    vm.currentFunc->vars.values = growArray(Value , vm.currentFunc->vars.values , 0 , vm.currentFunc->chunk->varCount+1);
-    vm.currentFunc->vars.capacity = vm.currentFunc->chunk->varCount+1;
+    
     return vm.currentFunc;
 }
 
 
 void iniVM(Chunk* chunk , Chunk* func){
     resetStack();
-    pushNewFeed(chunk , 1 );
+    initilizeValueArray(&vm.vars);
+    vm.vars.capacity =  VAR_STACK_MAX;
+    vm.vars.values = growArray(Value , vm.vars.values , 0 , vm.vars.capacity);
+    pushNewFeed(chunk , 1 , 0);
     vm.runCnt = 0;  
     vm.varFuncCount = 0; 
     vm.Functions = func;
@@ -192,20 +195,46 @@ interpretResult run(){
                 Value value;
                 iniValue(&value , type);
                 int it = (int)*nextInstruction();
-                writeValueArrayIndex(&topFunc()->vars , &value , it);
+                writeValueArrayIndex( &vm.vars , &value , it + topFunc()->varsCount);
                 break;
             }
 
+            // case OP_DECLARE_LOCAL :{
+            //     dataType type= (dataType)*nextInstruction();
+            //     Value value;
+            //     iniValue(&value , type);
+            //     int it = (int)*nextInstruction();
+            //     writeValueArrayIndex(&vm.vars , &value , it+ topFunc()->varsCount);
+            //     break;
+            // }
+
             case OP_LOAD_VAR :{
                 int it = (int)*nextInstruction();
-                pushStackVM(&topFunc()->vars.values[it]);
+                pushStackVM((vm.vars.values + it));
+                break;
+            }
+            case OP_LOAD_VAR_LOCAL:{
+                int it = (int)*nextInstruction();
+                pushStackVM(vm.vars.values + it + topFunc()->varsCount);
                 break;
             }
 
             case OP_STORE :{
                 int it = (int)*nextInstruction();
                 Value* top = popStackVM();
-                writeValueArrayIndex(&topFunc()->vars , top , it);
+                writeValueArrayIndex(&vm.vars , top , it);
+                break;
+            }
+
+            case OP_STORE_LOCAL :{
+                int it = (int)* nextInstruction();
+                Value* top = popStackVM();
+                writeValueArrayIndex(&vm.vars , top , it + topFunc()->varsCount);
+                break;
+            }
+
+            case OP_UNLOAD : {
+                int it = (int)* nextInstruction();
                 break;
             }
 
@@ -220,7 +249,7 @@ interpretResult run(){
             }
             case OP_CALL : {
                 int it = (int)*nextInstruction();
-                pushNewFeed(vm.Functions+it , 0);
+                pushNewFeed(vm.Functions+it , 0 , topFunc()->chunk->varCount);
                 break;
             }
 

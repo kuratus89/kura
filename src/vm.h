@@ -3,6 +3,7 @@
 
 # define FEED_MAX 256
 # define STACK_MAX 256
+# define VAR_STACK_MAX 256
 
 // typedef struct {
 //     Chunk* chunk;
@@ -14,7 +15,7 @@
 typedef struct{
     Chunk* chunk;
     uint8_t* ip;
-    valueArray vars;
+    int varsCount;
 }Feeder;
 
 typedef struct{
@@ -25,6 +26,7 @@ typedef struct{
     int runCnt;
     int varFuncCount;
     Chunk* Functions;
+    valueArray vars;
 }VM;
 
 
