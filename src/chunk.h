@@ -11,6 +11,14 @@ typedef enum {
     OP_SUB,
     OP_MUL,
     OP_DIV,
+    OP_LESSER,
+    OP_GREATER,
+    OP_LESS_EQUAL,
+    OP_GREAT_EQUAL,
+    OP_EQUAL_EQUAL,
+    OP_NOT_EQUAL,
+    OP_AND,
+    OP_OR,
     OP_FLAG,
     OP_GOTO,
     OP_STORE,
@@ -41,6 +49,12 @@ typedef struct{
     int index;
 }parameter;
 
+typedef struct{
+    int* flag;
+    int flagCount;
+    int flagCapacity;
+}Flags;
+
 typedef struct {
     int count;
     int capacity;
@@ -54,6 +68,8 @@ typedef struct {
     parameter* paras;
     int paraCount;
     int paraCapacity;
+    Flags flags;
+    
 }Chunk;
 typedef struct funcByte{
     int count;

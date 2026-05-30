@@ -20,7 +20,7 @@ void iniFuncByte(funcByte* func , int count){
     iniVarMaps(&func->vars);
 }
 
-void iniNodes(Nodes* nodes){
+void iniNodes(calcNodes* nodes){
     nodes->capacity=0;
     nodes->count = 0;
     nodes->node = NULL;
@@ -126,7 +126,7 @@ dataType getDataTypeKeyValue(varMaps* maps , char* key , Token* errorToken){
     return maps->maps[ma].type;
 }
 
-calcNode* writeNodes(Nodes* nodes , calcNode* node){
+calcNode* writeNodes(calcNodes* nodes , calcNode* node){
     if(nodes->capacity==nodes->count){
         printf("Error whiile compiling\ncrashed due to insufficient memory for nodes");
         exit(26);
@@ -138,10 +138,25 @@ calcNode* writeNodes(Nodes* nodes , calcNode* node){
 
 int isOperator(tokenType type){
     switch(type){
-        case TOKEN_SLASH : return 4;
-        case TOKEN_STAR :return 3;
-        case TOKEN_PLUS :return 2;
-        case TOKEN_MINUS :return 1;
+        // logical operators
+        case TOKEN_OR_OR: return 1;
+        case TOKEN_AND_AND : return 2;
+
+        // comparison operators
+        case TOKEN_EQUAL_EQUAL :
+        case TOKEN_BANG_EQUAL:
+        case TOKEN_LESSER:
+        case TOKEN_GREATER:
+        case TOKEN_LESSER_EQUAL:
+        case TOKEN_GREATER_EQUAL : return 3;
+
+        // arithmetic operators
+        case TOKEN_PLUS :
+        case TOKEN_MINUS : return 4;
+
+        case TOKEN_STAR:
+        case TOKEN_SLASH:return 5;
+
         default : return 0;
     }
 }
@@ -165,8 +180,8 @@ bool isValue(tokenType type){
 
 
 
-calcNode* buildBinTree(Token** tok , dataType type ,Nodes* nodes , bool fr, bool comma ){
-    Token* token = *tok;    
+calcNode* buildBinTree(Token** tok,calcNodes* nodes , bool fr, bool comma ){
+    Token* token = *tok;
     calcNode* current;
     Value tempVal;
     bool bra=0;
@@ -176,7 +191,7 @@ calcNode* buildBinTree(Token** tok , dataType type ,Nodes* nodes , bool fr, bool
     }
 
     if((token->type==TOKEN_LEFT_PAREN)){
-        current = buildBinTree(&token , type , nodes , 0 ,0);
+        current = buildBinTree(&token , nodes , 0 ,0);
     }
     else if(isOperator(token->type)){
         calcNode temp;
@@ -188,7 +203,7 @@ calcNode* buildBinTree(Token** tok , dataType type ,Nodes* nodes , bool fr, bool
         current->left= writeNodes(nodes , &temp);
         token++;
         if(token->type==TOKEN_LEFT_PAREN){
-            current->right =  buildBinTree(&token , type , nodes , 0,0); 
+            current->right =  buildBinTree(&token, nodes , 0,0); 
             current->right->parent = current;  
             // current = current->right;  
         }
@@ -266,7 +281,7 @@ calcNode* buildBinTree(Token** tok , dataType type ,Nodes* nodes , bool fr, bool
         calcNode rightNode;
         iniNode(&rightNode);
         if(token->type==TOKEN_LEFT_PAREN){
-            calcNode* ntr = buildBinTree(&token , type , nodes , 0 , 0);
+            calcNode* ntr = buildBinTree(&token , nodes , 0 , 0);
             rightNode = *ntr;
         }
         
@@ -414,11 +429,11 @@ void compileCallFunction(Token** tok , Chunk* chunk , dataType type , funcByte* 
         dataType type = ((cnk->paras)+i)->type;
         int tokenCount =0;
         for(Token* t = token ; (t->type!= TOKEN_COMMA)&&(t->type !=TOKEN_EOL) ; t++)tokenCount++;
-        Nodes nodes;
+        calcNodes nodes;
         iniNodes(&nodes);
         nodes.capacity = tokenCount*3 +8;
         nodes.node = growArray(calcNode , nodes.node , 0 , nodes.capacity);
-        calcNode* current = buildBinTree(&token ,type , &nodes , 1,1);
+        calcNode* current = buildBinTree(&token  , &nodes , 1,1);
         executeBinTree(current , chunk , type , &chunk->vars , func);
         if(token->type == TOKEN_RIGHT_PAREN)break;
         if(token->type !=TOKEN_COMMA)compileError(token , "invalid syntax");
@@ -434,13 +449,13 @@ void compileCallFunction(Token** tok , Chunk* chunk , dataType type , funcByte* 
 void compileReturn(Token** tok , Chunk* chunk , funcByte* func){
     Token* token = *tok;
     token++;
-    Nodes nodes;
+    calcNodes nodes;
     iniNodes(&nodes);
     int tokenCount = 0;
     for(Token* t = token; (t->type !=TOKEN_SEMICOLON)&&(t->type  != TOKEN_EOL) ; t++)tokenCount++;
     nodes.capacity = tokenCount*3 +8;
     nodes.node = growArray(calcNode , nodes.node , 0 , nodes.capacity);
-    calcNode* current = buildBinTree(&token ,chunk->returnType , &nodes , 1 , 0 );
+    calcNode* current = buildBinTree(&token  , &nodes , 1 , 0 );
     executeBinTree(current , chunk , chunk->returnType , &chunk->vars , func);
     writeChunk(chunk , OP_RETURN , token->line);
     *tok = token;
@@ -461,13 +476,13 @@ void datastructures(Token** tok , Chunk* chunk , funcByte* func){
     token++;
     if(token->type!=TOKEN_EQUAL)compileError(token , "invalid syntax");
     token++;
-    Nodes nodes;
+    calcNodes nodes;
     iniNodes(&nodes);
     int tokenCount = 0;
     for(Token* t = token; (t->type != TOKEN_SEMICOLON) && (t->type != TOKEN_EOL); t++)tokenCount++;
     nodes.capacity = tokenCount * 3 + 8;
     nodes.node = growArray(calcNode, NULL, 0, nodes.capacity);
-    calcNode* current=buildBinTree(&token , type , &nodes , 1 , 0);
+    calcNode* current=buildBinTree(&token , &nodes , 1 , 0);
     executeBinTree(current ,chunk , type, &chunk->vars , func);
 
     writeChunk(chunk , OP_STORE_LOCAL ,  token->line);
@@ -519,13 +534,13 @@ void identifier(Token** tok , Chunk* chunk , funcByte* func){
             token++;
             switch(sign->type){
                 case TOKEN_EQUAL : {
-                    Nodes nodes;
+                    calcNodes nodes;
                     iniNodes(&nodes);
                     int cnt = 0;
                     for(Token* t = token ; (t->type != TOKEN_SEMICOLON)&&(t->type !=TOKEN_EOL) ; t++)cnt++;
                     nodes.capacity = cnt*3 +8;
                     nodes.node = growArray(calcNode , NULL , 0 , nodes.capacity);
-                    calcNode* current = buildBinTree(&token , type ,&nodes , 1 , 0);
+                    calcNode* current = buildBinTree(&token  ,&nodes , 1 , 0);
                     executeBinTree(current, chunk ,type , &chunk->vars , func);
                 }
             }
@@ -540,13 +555,13 @@ void identifier(Token** tok , Chunk* chunk , funcByte* func){
             token++;
             switch(sign->type){
                 case TOKEN_EQUAL :{
-                    Nodes nodes;
+                    calcNodes nodes;
                     iniNodes(&nodes);
                     int cnt = 0;
                     for(Token* t = token ; (t->type != TOKEN_SEMICOLON)&& (t->type != TOKEN_EOL); t++)cnt++;
                     nodes.capacity = cnt*3 +8;
                     nodes.node = growArray(calcNode , NULL , 0 , nodes.capacity);
-                    calcNode* current = buildBinTree(&token , type , &nodes ,1 , 0);
+                    calcNode* current = buildBinTree(&token  , &nodes ,1 , 0);
                     executeBinTree(current , chunk , type , &func->global.vars , func);
                 }
             }
@@ -557,6 +572,31 @@ void identifier(Token** tok , Chunk* chunk , funcByte* func){
     *tok = token;
 }
 
+
+
+// void compileIf(Token** tok , Chunk* chunk , funcByte* func){
+//     Token* token = *tok;
+//     token++;
+//     if(token->type)
+// }
+
+// line 2 | length 3 | TOKEN_DATA | int
+// line 2 | length 1 | TOKEN_IDENTIFIER | x
+// line 2 | length 1 | TOKEN_EQUAL | =
+// line 2 | length 1 | TOKEN_INT | 5
+// line 2 | length 1 | TOKEN_SEMICOLON | ;
+// line 4 | length 2 | TOKEN_IF | if
+// line 4 | length 1 | TOKEN_LEFT_PAREN | (
+// line 4 | length 1 | TOKEN_IDENTIFIER | x
+// line 4 | length 2 | TOKEN_EQUAL_EQUAL | ==
+// line 4 | length 1 | TOKEN_INT | 5
+// line 4 | length 1 | TOKEN_RIGHT_PAREN | )
+// line 4 | length 1 | TOKEN_LEFT_BRACE | {
+// line 5 | length 1 | TOKEN_IDENTIFIER | x
+// line 5 | length 1 | TOKEN_EQUAL | =
+// line 5 | length 1 | TOKEN_INT | 9
+// line 5 | length 1 | TOKEN_SEMICOLON | ;
+// line 6 | length 1 | TOKEN_RIGHT_BRACE | }
 
 
 

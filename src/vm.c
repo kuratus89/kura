@@ -38,7 +38,7 @@ static inline Feeder* pushNewFeed(Chunk* chunk , bool ini, int varsCount){
     }
     vm.currentFunc->chunk = chunk;
     vm.currentFunc->ip = chunk->code;
-    
+    // vm.currentFunc->flags = growArray(uint8_t* , NULL , 0 , vm.currentFunc->chunk->flagCount);
     return vm.currentFunc;
 }
 
@@ -230,6 +230,13 @@ interpretResult run(){
                 int it = (int)* nextInstruction();
                 Value* top = popStackVM();
                 writeValueArrayIndex(&vm.vars , top , it + topFunc()->varsCount);
+                break;
+            }
+
+            case OP_GOTO :{
+                int it = (int)* nextInstruction();
+                int ip = *(topFunc()->chunk->flags.flag + it);
+                topFunc()->ip = topFunc()->chunk->code + ip;
                 break;
             }
 

@@ -1,5 +1,6 @@
 
-func int add(int a ){
-    return add(a+1);
+int x = 5==5 ;
+
+if((x==5)||(x==2)){
+    x = 9;
 }
-int x = add(5);

@@ -12,6 +12,7 @@
 //     Value* stackTop;
 // }VM;
 
+
 typedef struct{
     Chunk* chunk;
     uint8_t* ip;
@@ -27,6 +28,7 @@ typedef struct{
     int varFuncCount;
     Chunk* Functions;
     valueArray vars;
+
 }VM;
 
 

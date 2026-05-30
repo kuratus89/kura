@@ -15,7 +15,23 @@ typedef struct{
     int count;
     int capacity;
     calcNode* node;
-}Nodes;
+}calcNodes;
+
+typedef struct compNode{
+    bool isLeaf;
+    struct compNode* parent;
+
+    //if leaf=>
+    Token* comparator;
+    Token* leftValue;
+    Token* rightValue;
+
+    //if not leaf=>
+    struct compNode* left;
+    struct compNode* right;
+}compNode;
+
+
 
 
 
