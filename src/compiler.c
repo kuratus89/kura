@@ -354,7 +354,7 @@ int pushValue(Token* token ,  Chunk* chunk , dataType type){
     return writeValueArray(&chunk->constants , &value);
 }
 
-void executeBinTree(calcNode* current , Chunk* chunk , dataType type , varMaps* maps , funcByte* func){
+void executeBinTree(calcNode* current , Chunk* chunk , dataType type , varMaps* maps , funcByte* func ,int gotoIfFalse , int gotoIfTrue){
 
     if(current->isleaf){
         if(current->val->type == TOKEN_IDENTIFIER){
@@ -390,21 +390,38 @@ void executeBinTree(calcNode* current , Chunk* chunk , dataType type , varMaps* 
     }
     if(current->left->val==NULL){
         if((current->val->type!=TOKEN_MINUS)&&(current->val->type!=TOKEN_PLUS))compileError(current->val , "Ivalid syntax");
-        executeBinTree(current->right , chunk , type,  maps , func );
+        executeBinTree(current->right , chunk , type,  maps , func , -1 , -1);
         writeChunk(chunk , OP_NEGATE , current->val->line);
         return;
     }
-    
-    executeBinTree(current->left , chunk , type , maps , func );
-    executeBinTree(current->right , chunk , type , maps , func);
-    opcode op;
-    switch(current->val->type){
-        case TOKEN_PLUS : op=OP_ADD;break;
-        case TOKEN_MINUS :op= OP_SUB;break;
-        case TOKEN_STAR : op = OP_MUL;break;
-        case TOKEN_SLASH : op = OP_DIV;break;
+
+    if((current->val->type==TOKEN_AND_AND)||(current->val->type==TOKEN_OR_OR)){
+        if(current->val->type == TOKEN_AND_AND)
+
+        return;
     }
-    writeChunk(chunk , op , current->val->line);
+    if((current->val->type ==TOKEN_PLUS)||(current->val->type==TOKEN_MINUS)||(current->val->type ==TOKEN_STAR)||(current->val->type==TOKEN_SLASH)){
+        executeBinTree(current->left , chunk , type , maps , func , gotoIfFalse , gotoIfTrue );
+        executeBinTree(current->right , chunk , type , maps , func , gotoIfFalse , gotoIfTrue);
+        opcode op;
+        switch(current->val->type){
+            case TOKEN_PLUS : op=OP_ADD;break;
+            case TOKEN_MINUS :op= OP_SUB;break;
+            case TOKEN_STAR : op = OP_MUL;break;
+            case TOKEN_SLASH : op = OP_DIV;break;
+            // case TOKEN_EQUAL_EQUAL : op = OP_EQUAL_EQUAL ;break;
+            // case TOKEN_LESSER : op= OP_LESSER ; break;
+            // case TOKEN_GREATER : op= OP_GREATER;break;
+            // case TOKEN_GREATER_EQUAL: op = OP_GREAT_EQUAL;break;
+            // case TOKEN_LESSER_EQUAL : op= OP_LESS_EQUAL;break;
+        }
+        writeChunk(chunk , op , current->val->line);
+    }
+    else {
+
+    }
+    
+    
 }
 
 dataType tokenToDataType(Token* token){
@@ -434,7 +451,7 @@ void compileCallFunction(Token** tok , Chunk* chunk , dataType type , funcByte* 
         nodes.capacity = tokenCount*3 +8;
         nodes.node = growArray(calcNode , nodes.node , 0 , nodes.capacity);
         calcNode* current = buildBinTree(&token  , &nodes , 1,1);
-        executeBinTree(current , chunk , type , &chunk->vars , func);
+        executeBinTree(current , chunk , type , &chunk->vars , func , -1 , -1);
         if(token->type == TOKEN_RIGHT_PAREN)break;
         if(token->type !=TOKEN_COMMA)compileError(token , "invalid syntax");
         token++;
@@ -456,7 +473,7 @@ void compileReturn(Token** tok , Chunk* chunk , funcByte* func){
     nodes.capacity = tokenCount*3 +8;
     nodes.node = growArray(calcNode , nodes.node , 0 , nodes.capacity);
     calcNode* current = buildBinTree(&token  , &nodes , 1 , 0 );
-    executeBinTree(current , chunk , chunk->returnType , &chunk->vars , func);
+    executeBinTree(current , chunk , chunk->returnType , &chunk->vars , func , -1 , -1);
     writeChunk(chunk , OP_RETURN , token->line);
     *tok = token;
 }
@@ -483,7 +500,7 @@ void datastructures(Token** tok , Chunk* chunk , funcByte* func){
     nodes.capacity = tokenCount * 3 + 8;
     nodes.node = growArray(calcNode, NULL, 0, nodes.capacity);
     calcNode* current=buildBinTree(&token , &nodes , 1 , 0);
-    executeBinTree(current ,chunk , type, &chunk->vars , func);
+    executeBinTree(current ,chunk , type, &chunk->vars , func , -1 , -1);
 
     writeChunk(chunk , OP_STORE_LOCAL ,  token->line);
     writeChunk(chunk , val , token->line);    
@@ -541,7 +558,7 @@ void identifier(Token** tok , Chunk* chunk , funcByte* func){
                     nodes.capacity = cnt*3 +8;
                     nodes.node = growArray(calcNode , NULL , 0 , nodes.capacity);
                     calcNode* current = buildBinTree(&token  ,&nodes , 1 , 0);
-                    executeBinTree(current, chunk ,type , &chunk->vars , func);
+                    executeBinTree(current, chunk ,type , &chunk->vars , func , -1 , -1);
                 }
             }
             writeChunk(chunk , OP_STORE_LOCAL , token->line);
@@ -562,7 +579,7 @@ void identifier(Token** tok , Chunk* chunk , funcByte* func){
                     nodes.capacity = cnt*3 +8;
                     nodes.node = growArray(calcNode , NULL , 0 , nodes.capacity);
                     calcNode* current = buildBinTree(&token  , &nodes ,1 , 0);
-                    executeBinTree(current , chunk , type , &func->global.vars , func);
+                    executeBinTree(current , chunk , type , &func->global.vars , func , -1 , -1);
                 }
             }
             writeChunk(chunk , OP_STORE , token->line);
