@@ -589,6 +589,21 @@ void identifier(Token** tok , Chunk* chunk , funcByte* func){
     *tok = token;
 }
 
+void compilePrint(Token** tok , Chunk* chunk , funcByte* func){
+    Token *token = *tok;
+    calcNodes nodes;
+    iniNodes(&nodes);
+    token++;
+    int cnt = 0;
+    for(Token* t = token ; (t->type !=TOKEN_SEMICOLON)&&(t->type !=TOKEN_EOL); t++)cnt++;
+    nodes.capacity = cnt*3 +8;
+    nodes.node = growArray(calcNode , NULL ,0 , nodes.capacity);
+    calcNode* current = buildBinTree(&token , &nodes , 1 , 0);
+    executeBinTree(current , chunk , DATA_INT , &chunk->vars , func , -1 , -1);
+    writeChunk(chunk , OP_PRINT , token->line);
+    *tok = token;
+}
+
 
 
 // void compileIf(Token** tok , Chunk* chunk , funcByte* func){
@@ -628,6 +643,10 @@ void compileGlobal(Tokens* global ,funcByte* func){
             }
             case TOKEN_IDENTIFIER :{
                 identifier(&it , &func->global , func);
+                break;
+            }
+            case TOKEN_PRINT : {
+                compilePrint(&it , &func->global , func);
                 break;
             }
             
@@ -680,6 +699,9 @@ void compileFunc(Tokens* tokens, funcByte* func ){
             case TOKEN_RETURN :{
                 compileReturn(&token , chunk , func);
                 break;
+            }
+            case TOKEN_PRINT:{
+                compilePrint(&token , chunk , func);
             }
         }
         while((token!=end)&&(token->type != TOKEN_SEMICOLON))token++;

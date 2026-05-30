@@ -57,6 +57,7 @@ char* disassembleTokenType(tokenType type){
         case TOKEN_INT:               return("TOKEN_INT");
         case TOKEN_FUNC:              return("TOKEN_FUNC");
         case TOKEN_FLOAT:             return("TOKEN_FLOAT");
+        case TOKEN_PRINT:             return("TOKEN_PRINT");
     
         //OTHERS
 
@@ -158,6 +159,7 @@ int disassembleInstruction(Chunk* chunk , int offset){
         case OP_LOAD_VAR_LOCAL : return VarIoInstruction("OP_LOAD_VAR_LOCAL" , chunk , offset);
         case OP_CALL : return disassembleCallInstruction("OP_CALL" , chunk , offset);
         case OP_EXIT : return printInstructer("OP_EXIT" , offset);
+        case OP_PRINT : return printInstructer("OP_PRINT" , offset);
         default : printf("Unknow opCode %d\n",inst);
     }
     return offset+1;
@@ -193,7 +195,7 @@ void disassembleToken(Token* token){
 
 void disassembleTokens(Tokens* tokens){
     Token* it = tokens->token;
-    printf("<=== %s ===>\n" , tokens->name);
+    printf("\n<=== %s ===>\n" , tokens->name);
     printf("Token count : %d \n Token capacity : %d\n Tokens :\n" , tokens->count , tokens->capacity);
     while(it->line>0){
         disassembleToken(it);
@@ -202,9 +204,11 @@ void disassembleTokens(Tokens* tokens){
 }
 
 void disassembleFuncToken(tokenFunctions* tf){
+    printf("\n<========== DEBUG TOKENS ==========>\n");
     printf("Number of non-global function : %d \n" , tf->count);
     disassembleTokens(&tf->mainFunc);
-    for(int i=0 ; i<tf->count ; i++)disassembleTokens(tf->func+i);    
+    for(int i=0 ; i<tf->count ; i++)disassembleTokens(tf->func+i);  
+    printf("\n<========== DEBUG TOKENS ENDS ==========>\n");  
 }
 
 void disassembleStackVM(VM* vm){
@@ -218,8 +222,10 @@ void disassembleStackVM(VM* vm){
 }
 
 void disassembleFuncByte(funcByte* func){
+    printf("\n<========== DEBUG BYTECODE ==========>\n");
     disassembleChunk(&func->global , "global");
     for(int i=0 ; i!=func->funcCount ; i++){
         disassembleChunk((func->func + i) ,(func->func+i)->name);
     }
+    printf("\n<========== DEBUG BYTECODE ENDS ==========>\n");
 }

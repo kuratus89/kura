@@ -17,11 +17,14 @@ interpretResult interpret(char* source){
     functinize(&tokens , &tf);
     funcByte func;
     compile(&tf ,&func );
+    #ifdef DEBUG
     disassembleFuncToken(&tf);
     disassembleFuncByte(&func);
-    // iniVM(&func.global , func.func);
-    // return (run());
-    return (INTERPRET_OK);
+    printf("\n<========== DEBUG VIRTUAL MACHINE ==========>\n");
+    #endif
+    iniVM(&func.global , func.func);
+    return (run());
+    // return (INTERPRET_OK);
 }
 
 static char* readFile(const char* path){
@@ -67,6 +70,6 @@ int main(int argc , const char* argv[]){
         exit(87);
     }
     runFile(argv[1]);
-    printf("success!");
+    printf("\nComplete!");
     return 0;
 }

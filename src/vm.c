@@ -259,9 +259,15 @@ interpretResult run(){
                 pushNewFeed(vm.Functions+it , 0 , topFunc()->chunk->varCount);
                 break;
             }
+            case OP_PRINT:{
+                printValue(popStackVM());
+                break;
+            }
 
         }
+        #ifdef DEBUG
         debugVM();
+        #endif
     }
 
     return (INTERPRET_OK);

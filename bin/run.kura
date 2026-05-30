@@ -1,6 +1,10 @@
 
-int x = 5==5 ;
+int x = 5;
 
-if((x==5)||(x==2)){
-    x = 9;
+func int add(int a , int b){
+    return (a+b);
 }
+
+int y = add(x*(3+5) , 2);
+
+print y;

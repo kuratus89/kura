@@ -154,6 +154,7 @@ bool tokenizeKeywords(Token* token){
         "for",
         "func",
         "if",
+        "print",
         "return",
         "true",
         "while"
@@ -161,7 +162,7 @@ bool tokenizeKeywords(Token* token){
     
     tokenType keyType[] = {
         TOKEN_NULL , TOKEN_BREAK , TOKEN_CONTINUE ,TOKEN_ELSE , TOKEN_EXIT , TOKEN_FALSE 
-        , TOKEN_FOR ,TOKEN_FUNC ,TOKEN_IF , TOKEN_RETURN , TOKEN_TRUE , TOKEN_WHILE
+        , TOKEN_FOR ,TOKEN_FUNC ,TOKEN_IF , TOKEN_PRINT , TOKEN_RETURN , TOKEN_TRUE , TOKEN_WHILE
     };
     
     int low = 0;

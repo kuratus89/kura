@@ -27,6 +27,7 @@ typedef enum {
     OP_DECLARE,
     OP_LOAD_VAR,
     OP_UNLOAD,
+    OP_PRINT,
     OP_CALL,
     OP_EXIT,
 }opcode;

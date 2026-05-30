@@ -5,6 +5,3 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-
-#define DEBUG_STACK_VM
-#define DEBUG_CHUNK
