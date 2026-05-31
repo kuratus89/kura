@@ -169,3 +169,84 @@ comment
 
 ---
 
+# Build
+
+## Prequisites
+
+1) Cmake
+2) C compiler
+3) Make/Ninja
+
+On Linux:
+```
+sudo apt install cmake gcc make
+```
+
+On macos:
+```
+brew install cmake
+xcode-select --install
+```
+
+On windows , install [CMake](https://cmake.org/download) and either MinGW-w64 or Visual Studio (with the Desktop development with c++ workload).
+---
+
+## Release build
+It compiles without debug outputs
+
+```
+cmake -S . -B build/release -DCMAKE_BUILD_TYPE=Release
+cmake --build build/release
+```
+
+The binary is written to:
+```
+bin/Release/kura.exe
+```
+
+Run it:
+
+linux:
+```
+bin/Release/Kura path/to/source/kura
+```
+windows:
+```
+./bin/Release/Kura.exe path/to/source.kura
+```
+
+## Debug build
+
+This build defines the DEBUG macro, which enables diagnostic output.
+
+```
+cmake -S . -B build/debug -DCMAKE_BUILD_TYPE=Debug
+cmake --build build/debug
+```
+
+the binary is written to:
+```
+bin/Debug/Kura.exe
+```
+
+Run it:
+
+Linux:
+```
+bin/Debug/Kura path/to/source.kura
+```
+
+Windows:
+```
+./bin/Debug/Kura.exe path/to/source.kura
+```
+
+---
+
+### Switching between Release and Debug
+
+You can keep both files at same time and rebuild either one independently:
+```
+cmake --build build/release
+cmake --build build/debug
+```
