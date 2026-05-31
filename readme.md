@@ -46,3 +46,73 @@ Its a stack based virtual machine . It maintains:
 - A call stack
 - A variable arry
 
+
+## Language Refrence
+
+### Data types
+
+| Keyword | Size |
+|---------|------|
+| 'int'   | 4 B  |
+| 'float' | 4 B  |
+| 'bool'  | 1 B  |
+| 'char'  | 1 B  |
+| 'string'| -    |
+| 'vector'| -    |
+
+### Variables
+
+Variables should be declared with an explict type and should be assigned immediately.
+
+```
+int x = 45;
+float y = 9.12;
+bool flag = 1;
+```
+
+To updatet variables , we can use '=' , '+=' or '-=' operators:
+
+```
+x = x+1;
+x += 10;
+x -= 3;
+```
+
+### Operators
+
+**Arithmetic**
+
+| Operators  | Meaning        |
+|------------|----------------|
+| '+'        | Addition       |
+| '-'        | Subtraction    |
+| '*'        | Multiplication |
+| '/'        | Division       |
+| '%'        | Modulo         |
+| '-'(unarry)| Negation       |
+
+**Comparision**
+
+| Operator | Meaning               |
+|----------|-----------------------|
+| '=='     | Equal                 |
+| '!='     | Not equal             |
+| '<'      | Less than             |
+| '>'      | Greater then          |
+| '<='     | Less than or equal    |
+| '>='     | Greater than or equal |
+
+**Logical**
+
+| Operator | Meaning |
+|----------|---------|
+| '&&'     | And     |
+| '||'     | Or      |
+| '!'      | Not     |
+
+Operator precedence : low -> high
+
+```
+|| -> && -> == , != , < , > , <= , >= -> + , - -> * , /
+```
+
