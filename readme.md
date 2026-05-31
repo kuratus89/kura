@@ -116,3 +116,56 @@ Operator precedence : low -> high
 || -> && -> == , != , < , > , <= , >= -> + , - -> * , /
 ```
 
+### Function
+
+Functions should be declared with the 'func' keyword with their return data type , name and parameter list
+
+```
+func int add(int a , int b){
+    return (a+b);
+}
+```
+
+### Control Flow
+
+It supports 'if'/'else' , 'while' , and 'for' loops.
+We can also use 'break' and 'continue' to control loops.
+And 'return' to exits a function with a return value.
+
+```
+if(x==9){
+    x=5;
+}
+else {
+    x=10;
+}
+while(x<=10){
+    print x;
+    x-=1;
+}
+```
+
+### Print
+'print' is a built in statement that stdout only integers.
+
+```
+int x = 10 +5;
+print x;
+```
+
+### Comments
+
+kura use two comment types:
+``` 
+# this is single line comment
+
+// 
+this is 
+multi line 
+comment
+//
+
+```
+
+---
+
