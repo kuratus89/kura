@@ -1,15 +1,14 @@
-func int add(int a, int b) {
-    return a + b;
+# globals.kura
+
+int base = 1000;
+
+func int withBase(int n) {
+    return base + n;
 }
 
-func int square(int n) {
-    return n * n;
+func int scaled(int n, int factor) {
+    return withBase(n) * factor;
 }
 
-func int hypotenuseSq(int a, int b) {
-    return square(a) + square(b);
-}
-
-print add(10, 32);  
-print square(9);    
-print hypotenuseSq(3, 4);
+print withBase(42);       # 1042
+print scaled(5, 2);       # 2010

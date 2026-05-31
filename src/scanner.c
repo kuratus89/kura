@@ -100,8 +100,6 @@ bool signs(scanPtr* scan , scar* fs){
         pushScan(scan , fs);
         scan->start= scan->end;
     }
-
-    doubleSign(scan);
     if(*scan->end=='#'){
         while((*scan->end!='\n')&&(*scan->end!='\0'))scan->end++;
         scan->end++;
@@ -123,6 +121,8 @@ bool signs(scanPtr* scan , scar* fs){
         scan->start = scan->end;
         return 1;
     }
+    doubleSign(scan);
+    
     if(scan->start!=scan->end){
         scan->length = scan->end - scan->start;
         pushScan(scan , fs);

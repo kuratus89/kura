@@ -337,4 +337,19 @@ print hypotenuseSquare(3,4);
 Complete!
 ```
 
+# WIP FEATURE LIST
 
+- [X] Int data type
+- [ ] Char data type
+- [ ] float data type
+- [ ] string data type
+- [ ] vectors
+- [X] functions
+- [ ] while loop
+- [ ] for loop
+- [X] Expression evaluation
+- [ ] Custom memory system (stack and heap memory)
+- [X] Comments
+- [X] Print
+- [ ] Custom object definition
+- [X] Global variable

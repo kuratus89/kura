@@ -256,7 +256,7 @@ interpretResult run(){
             }
             case OP_CALL : {
                 int it = (int)*nextInstruction();
-                pushNewFeed(vm.Functions+it , 0 , topFunc()->chunk->varCount);
+                pushNewFeed(vm.Functions+it , 0 , topFunc()->chunk->varCount + topFunc()->varsCount);
                 break;
             }
             case OP_PRINT:{
