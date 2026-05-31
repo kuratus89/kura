@@ -261,6 +261,7 @@ interpretResult run(){
             }
             case OP_PRINT:{
                 printValue(popStackVM());
+                printf("\n");
                 break;
             }
 

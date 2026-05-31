@@ -250,3 +250,91 @@ You can keep both files at same time and rebuild either one independently:
 cmake --build build/release
 cmake --build build/debug
 ```
+
+# How to use Kura
+
+## Run a program
+```
+./kura.exe path/to/code.kura
+```
+
+It reads the file , compiles it and execute it.
+
+On success thee interpreter prints:
+```
+Complete!
+```
+
+## File convention
+Kura accepts any file path but '.kura' is recommended
+
+## What works right now
+
+This is still under development and There are many things which is not fully implemented.
+
+1) Only int data types works
+2) 'if'/'else' does not work right now
+3) 'while'/'for' does not work right now
+
+## Example programs
+
+### Arithmetic.kura
+
+```
+int a = 10;
+int b = 3;
+
+print a+b;
+print a-b;
+print a*b;
+print a/b;
+print a+b*2;
+print (a+b)*2;
+```
+**Run**
+```
+./kura.exe arethmetic.kura
+```
+
+**Output**
+```
+13
+7
+30
+3
+16
+26
+Complete!
+```
+
+
+### Functions.kura
+
+```
+func int add(int a , int b){
+    return a+b;
+}
+
+func int square(int n){
+    return n*n;
+}
+func int hypotenuseSquare(int a , int b){
+    return square(a)+ square(b);
+}
+
+print add(10 , 32);
+print square(9);
+print hypotenuseSquare(3,4);
+
+```
+
+**Output**
+
+```
+42
+81
+25
+Complete!
+```
+
+
