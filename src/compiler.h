@@ -7,8 +7,8 @@ typedef struct calcNode{
     bool isleaf;
     int parent;
     Token* val;
-    struct calcNode* left;
-    struct calcNode* right;
+    int left;
+    int right;
 }calcNode;
 
 typedef struct{
