@@ -19,6 +19,8 @@ typedef enum {
     OP_NOT_EQUAL,
     OP_AND,
     OP_OR,
+    OP_GOTO_IF_TRUE,
+    OP_GOTO_IF_FALSE,
     OP_FLAG,
     OP_GOTO,
     OP_STORE,

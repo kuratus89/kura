@@ -13,6 +13,8 @@ void initilizeChunk(Chunk* chunk){
     chunk->paraCount =0;
     chunk->paras = NULL;
     chunk->returnType = DATA_VOID;
+    chunk->flags.flagCapacity = 0;
+    chunk->flags.flagCount = 0;
     initilizeValueArray(&chunk->constants);
     iniVarMaps(&chunk->vars);
 }

@@ -1,10 +1,2 @@
 
-int x = 5;
-
-func int add(int a , int b){
-    return (a+b);
-}
-
-int y = add(x*(3+5) , 2);
-
-print y;
+print 5;

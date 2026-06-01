@@ -5,7 +5,7 @@
 
 typedef struct calcNode{
     bool isleaf;
-    struct calcNode* parent;
+    int parent;
     Token* val;
     struct calcNode* left;
     struct calcNode* right;
