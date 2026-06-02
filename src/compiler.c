@@ -602,145 +602,106 @@ void executeBinTree(int current , calcNodes* nodes , Chunk* chunk  , varMaps* ma
 
     // if(current->isleaf){
     if(nodes->node[current].isleaf){
-        // if(current->val->type == TOKEN_IDENTIFIER){
         if(nodes->node[current].val->type == TOKEN_IDENTIFIER){
-            // Token* it = current->val;
             Token* it = nodes->node[current].val;
             it++;
             if(it->type==TOKEN_LEFT_PAREN){
-                // compileCallFunction(&current->val , chunk, func);
                 compileCallFunction(&(nodes->node[current].val) , chunk , func);
             }
             else {// variabale call
                 bool local;
-                // char* identifier = tokenGetSource(current->val);
-                // if(isKeyValue(maps , identifier , current->val))local =1;
                 char* identifier = tokenGetSource(nodes->node[current].val);
                 if(isKeyValue(maps , identifier , nodes->node[current].val))local = 1;
                 else local = 0;
 
                 int value;
                 if(local){
-                    // value= getKeyValue(maps , identifier , current->val);
-                    // writeChunk(chunk , OP_LOAD_VAR_LOCAL , current->val->line);
                     value = getKeyValue(maps , identifier , nodes->node[current].val);
                     writeChunk(chunk , OP_LOAD_VAR_LOCAL , nodes->node[current].val->line);
                 }
                 else {
-                    // value = getKeyValue(&func->global.vars , identifier , current->val);
-                    // writeChunk(chunk , OP_LOAD_VAR , current->val->line);
                     value = getKeyValue(&func->global.vars , identifier , nodes->node[current].val);
                     writeChunk(chunk , OP_LOAD_VAR , nodes->node[current].val->line);
                 }
-                // writeChunk(chunk , value , current->val->line);.
-                writeChunk(chunk , value , nodes->node[current].val->line);
+                 writeChunk(chunk , value , nodes->node[current].val->line);
             }
         }
         else {
-            // writeChunk(chunk , OP_LOAD_CONSTANT , current->val->line);
-            // int it = pushValue(current->val , chunk );
-            // writeChunk(chunk , it , current->val->line);
-            writeChunk(chunk , OP_LOAD_CONSTANT ,nodes->node[current].val->line );
+           writeChunk(chunk , OP_LOAD_CONSTANT ,nodes->node[current].val->line );
             int it = pushValue(nodes->node[current].val , chunk);
             writeChunk(chunk , it , nodes->node[current].val->line);
         }
         return;
     }
-    // if(current->left->val==NULL){
     if(nodes->node[nodes->node[current].left].val ==NULL){
-        // if((current->val->type!=TOKEN_MINUS)&&(current->val->type!=TOKEN_PLUS))compileError(current->val , "Ivalid syntax");
-        // executeBinTree(current->right , chunk , maps , func , -1 , -1);
-        // writeChunk(chunk , OP_NEGATE , current->val->line);
         if((nodes->node[current].val->type != TOKEN_MINUS)&&(nodes->node[current].val->type !=TOKEN_PLUS))compileError(nodes->node[current].val , "invalid syntax");
         executeBinTree(nodes->node[current].right , nodes , chunk , maps , func , gotoIfFalse , gotoIfTrue);
         if(nodes->node[current].val->type == TOKEN_MINUS)writeChunk(chunk , OP_NEGATE , nodes->node[current].val->line);
         return;
     }
-    // if((current->val->type ==TOKEN_PLUS)||(current->val->type==TOKEN_MINUS)||(current->val->type ==TOKEN_STAR)||(current->val->type==TOKEN_SLASH)){
     if((nodes->node[current].val->type == TOKEN_PLUS)||(nodes->node[current].val->type ==TOKEN_MINUS)||(nodes->node[current].val->type ==TOKEN_STAR)||(nodes->node[current].val->type == TOKEN_SLASH)){
 
-        // executeBinTree(current->left , chunk  , maps , func , gotoIfFalse , gotoIfTrue );
-        // executeBinTree(current->right , chunk, maps , func , gotoIfFalse , gotoIfTrue);
         executeBinTree(nodes->node[current].left  , nodes , chunk , maps , func , gotoIfFalse , gotoIfTrue);
         executeBinTree(nodes->node[current].right , nodes , chunk , maps , func , gotoIfFalse , gotoIfTrue);
         opcode op;
-        // switch(current->val->type){
         switch(nodes->node[current].val->type){
             case TOKEN_PLUS : op=OP_ADD;break;
             case TOKEN_MINUS :op= OP_SUB;break;
             case TOKEN_STAR : op = OP_MUL;break;
             case TOKEN_SLASH : op = OP_DIV;break;
-            // case TOKEN_EQUAL_EQUAL : op = OP_EQUAL_EQUAL ;break;
-            // case TOKEN_LESSER : op= OP_LESSER ; break;
-            // case TOKEN_GREATER : op= OP_GREATER;break;
-            // case TOKEN_GREATER_EQUAL: op = OP_GREAT_EQUAL;break;
-            // case TOKEN_LESSER_EQUAL : op= OP_LESS_EQUAL;break;
         }
-        // writeChunk(chunk , op , current->val->line);
         writeChunk(chunk , op , nodes->node[current].val->line);
         return;
     }
-    // if((gotoIfFalse>=0)&&(current->val->type==TOKEN_AND_AND)){
     if((gotoIfFalse>=0)&&(nodes->node[current].val->type == TOKEN_AND_AND)){
-        // executeBinTree(current->left , chunk  , maps , func , gotoIfFalse , gotoIfTrue);
-        executeBinTree(nodes->node[current].left , nodes, chunk , maps , func , gotoIfFalse , gotoIfTrue);
+        int newFlag = addFlag(chunk);
+        executeBinTree(nodes->node[current].left , nodes, chunk , maps , func , gotoIfFalse , newFlag);
 
-        // writeChunk(chunk , OP_GOTO_IF_FALSE , current->val->line);
-        // writeChunk(chunk , gotoIfFalse , current->val->line);
+        if(!isCmp(nodes->node[nodes->node[current].left].val->type)){
+            writeChunk(chunk , OP_GOTO_IF_FALSE , nodes->node[current].val->line);
+            writeChunk(chunk , gotoIfFalse , nodes->node[current].val->line);
+        }
+        
+        emitFlag(chunk , newFlag);
 
-        writeChunk(chunk , OP_GOTO_IF_FALSE , nodes->node[current].val->line);
-        writeChunk(chunk , gotoIfFalse , nodes->node[current].val->line);
-
-        // executeBinTree(current->right , chunk , maps , func , gotoIfFalse , gotoIfTrue);
         executeBinTree(nodes->node[current].right , nodes , chunk , maps , func , gotoIfFalse , gotoIfTrue);
 
-        // writeChunk(chunk , OP_GOTO_IF_FALSE, current->val->line);
-        // writeChunk(chunk , gotoIfFalse , current->val->line);
-        writeChunk(chunk , OP_GOTO_IF_FALSE , nodes->node[current].val->line);
-        writeChunk(chunk , gotoIfFalse , nodes->node[current].val->line);
+        if(!isCmp(nodes->node[nodes->node[current].right].val->type)){
+            writeChunk(chunk , OP_GOTO_IF_FALSE , nodes->node[current].val->line);
+            writeChunk(chunk , gotoIfFalse , nodes->node[current].val->line);
+        }
 
-        // writeChunk(chunk , OP_GOTO , current->val->line);
-        // writeChunk(chunk , gotoIfTrue , current->val->line);   
         writeChunk(chunk ,OP_GOTO ,nodes->node[current].val->line );
         writeChunk(chunk , gotoIfTrue , nodes->node[current].val->line);
         return;
         
     }
-    // else if((gotoIfFalse>=0)&&(current->val->type == TOKEN_OR_OR)){
     else if((gotoIfFalse>=0)&&(nodes->node[current].val->type == TOKEN_OR_OR)){
         int newFlag = addFlag(chunk);
-        // executeBinTree(current->left , chunk  , maps , func , newFlag , gotoIfTrue);
         executeBinTree(nodes->node[current].left , nodes , chunk , maps , func , newFlag , gotoIfTrue);
 
-        // writeChunk(chunk , OP_GOTO_IF_TRUE , current->val->line);
-        // writeChunk(chunk , gotoIfTrue , current->val->line);
-        writeChunk(chunk , OP_GOTO_IF_TRUE , nodes->node[current].val->line);
-        writeChunk(chunk , gotoIfTrue , nodes->node[current].val->line);
+        if(!isCmp(nodes->node[nodes->node[current].left].val->type)){
+            writeChunk(chunk , OP_GOTO_IF_TRUE , nodes->node[current].val->line);
+            writeChunk(chunk , gotoIfTrue , nodes->node[current].val->line);
+        }
 
         emitFlag(chunk , newFlag);
-        // executeBinTree(current->right , chunk  , maps , func , gotoIfFalse , gotoIfTrue);.
         executeBinTree(nodes->node[current].right , nodes , chunk , maps , func , gotoIfFalse , gotoIfTrue);
 
-        // writeChunk(chunk , OP_GOTO_IF_FALSE, current->val->line);
-        // writeChunk(chunk , gotoIfFalse , current->val->line);
-        writeChunk(chunk , OP_GOTO_IF_FALSE , nodes->node[current].val->line);
-        writeChunk(chunk , gotoIfFalse , nodes->node[current].val->line);
+        if(!isCmp(nodes->node[nodes->node[current].right].val->type)){
+            writeChunk(chunk , OP_GOTO_IF_FALSE , nodes->node[current].val->line);
+            writeChunk(chunk , gotoIfFalse , nodes->node[current].val->line);
+        }
 
-        // writeChunk(chunk , OP_GOTO , current->val->line);
-        // writeChunk(chunk , gotoIfTrue , current->val->line); 
         writeChunk(chunk , OP_GOTO , nodes->node[current].val->line);
         writeChunk(chunk , gotoIfTrue , nodes->node[current].val->line);
         return;
     }
-    // else if(isCmp(current)){// compare operators
     else if(isCmp(nodes->node[current].val->type)){
-        // executeBinTree(current->left , chunk , maps , func , gotoIfFalse , gotoIfTrue);
-        // executeBinTree(current->right, chunk , maps , func , gotoIfFalse , gotoIfTrue);
         executeBinTree(nodes->node[current].left , nodes , chunk ,maps , func , gotoIfFalse , gotoIfTrue);
         executeBinTree(nodes->node[current].right , nodes , chunk , maps , func , gotoIfFalse , gotoIfTrue);
 
         opcode op;
-        // switch(current->val->type){
         switch(nodes->node[current].val->type){
             case TOKEN_GREATER : op = OP_GREATER;break;
             case TOKEN_LESSER : op = OP_LESSER;break;
@@ -749,12 +710,13 @@ void executeBinTree(int current , calcNodes* nodes , Chunk* chunk  , varMaps* ma
             case TOKEN_EQUAL_EQUAL : op= OP_EQUAL_EQUAL ; break;
             case TOKEN_BANG_EQUAL : op = OP_NOT_EQUAL ; break;
         }
-        // writeChunk(chunk , op , current->val->line);
         writeChunk(chunk , op , nodes->node[current].val->line);
 
         if(gotoIfFalse>=0){
             writeChunk(chunk , OP_GOTO_IF_FALSE , -1);
             writeChunk(chunk , gotoIfFalse , -1);
+            writeChunk(chunk , OP_GOTO , -1);
+            writeChunk(chunk , gotoIfTrue , -1);
         }
         return;
     }

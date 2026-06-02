@@ -1,4 +1,23 @@
+int a = 4;
+int b= 6;
+int c = 9;
+int d = 3;
+int e = 19;
+int f = 34;
+int g = 99;
 
-if((5>3)||(6>2)){
-    print 5;
+if ((a > b || c != 0) && (d < e || f == g)) {
+    print 1;
 }
+else {
+    print 2;
+}
+
+
+
+//
+
+if (4>2){
+    print 4;
+}
+//
