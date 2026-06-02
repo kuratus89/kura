@@ -1,19 +1,51 @@
+int a = 10;
+int b = 5;
+int c = 20;
+int d = 7;
+int result = 0;
 
-int a = 1;
-int b= 6;
-int c = 9;
-int d = 3;
-int e = 19;
-int f = 34;
-int g = 99;
+if ((a > b) && (c > d)) {
 
-if ((a > b || c != 0) && (d < e || f == g)) {
-    print 1;
+    if ((a + b) > (c - d)) {
+        result = 100;
+    }
+    else if ((a * b) > (c + d)) {
+        result = 200;
+    }
+    else {
+        result = 300;
+    }
+
 }
-else{
-    print 2;
+else if ((a == 10) || (d < 3)) {
+
+    if ((c / 2) == 0) {
+        result = result + 10;
+    }
+    else {
+        result = result + 20;
+    }
+
+}
+else {
+
+    if (a < 0) {
+        result = -1;
+    }
+    else if (a < 100) {
+
+        if (b > 0) {
+            result = 500;
+        }
+        else {
+            result = 600;
+        }
+
+    }
+    else {
+        result = 700;
+    }
+
 }
 
-
-
-
+print(result);

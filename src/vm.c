@@ -197,9 +197,12 @@ interpretResult run(){
                 Value value;
                 iniValue(&value , DATA_BOOL);
                 bool ans;
+
                 switch(topStackVM()->type){
                     case DATA_INT:{
-                        ans = *(int*)popStackVM()->value > *(int*)popStackVM()->value;
+                        int rhs = *(int*)popStackVM()->value;
+                        int lhs = *(int*)popStackVM()->value;
+                        ans = rhs<lhs;
                         break;
                     }
                 }
@@ -216,16 +219,16 @@ interpretResult run(){
                     runTimeError(vm.currentFunc->ip , "cannot compare values of diffrent dataType");
                     return(INTERPRET_RUNTIME_ERROR);
                 }
-                bool ans;
+                Value value;
+                iniValue(&value , DATA_BOOL);
                 switch(topStackVM()->type){
                     case DATA_INT :{
-                        ans = *(int*)popStackVM()->value < *(int*)popStackVM()->value;
+                        int rhs = *(int*)popStackVM()->value;
+                        int lhs = *(int*)popStackVM()->value;
+                        *(int*)value.value = rhs>lhs;
                         break;
                     }
                 }
-                Value value;
-                iniValue(&value , DATA_BOOL);
-                *(bool*)value.value = ans;
                 pushStackVM(&value);
                 break;
 
@@ -239,16 +242,17 @@ interpretResult run(){
                     runTimeError(vm.currentFunc->ip , "cannot compare values of diffrent dataType");
                     return(INTERPRET_RUNTIME_ERROR);
                 }
-                bool ans;
+                Value value;
+                iniValue(&value ,DATA_BOOL);
                 switch(topStackVM()->type){
                     case DATA_INT:{
-                        ans = *(int*)popStackVM()->value >= *(int*)popStackVM()->value;
+                        int rhs = *(int*)popStackVM()->value;
+                        int lhs = *(int*)popStackVM()->value;
+                        *(int*)value.value= lhs <=rhs;
                         break;
                     }
                 }
-                Value value;
-                iniValue(&value , DATA_BOOL);
-                *(bool*)value.value = ans;
+                
                 pushStackVM(&value);
                 break;
             }
@@ -265,7 +269,9 @@ interpretResult run(){
                 iniValue(&value , DATA_BOOL);
                 switch(topStackVM()->type){
                     case DATA_INT :{
-                        *(bool*)value.value = *(int*)popStackVM()->value <= *(int*)popStackVM()->value;
+                        int rhs = *(int*)popStackVM()->value;
+                        int lhs = *(int*)popStackVM()->value;
+                        *(bool*)value.value = rhs >= lhs;
                         break;
                     }
                 }
@@ -393,11 +399,11 @@ interpretResult run(){
                 bool todo;
                 switch(topStackVM()->type){
                     case DATA_BOOL :{
-                        todo = *(bool*)popStackVM()->value;
+                        todo = !(*(bool*)popStackVM()->value);
                         break;
                     }
                     case DATA_INT:{
-                        todo = !(*(int*)popStackVM()->value == 0);
+                        todo = (*(int*)popStackVM()->value == 0);
                         break;
                     }
                 }
