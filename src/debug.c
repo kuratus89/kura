@@ -140,6 +140,13 @@ int VarIoInstruction(const char* name , Chunk* chunk , int offset){
     return offset+2;
 }
 
+int debugGoto(const char* name  , Chunk* chunk , int offset){
+    uint8_t index = chunk->code[offset+1];
+    int bytecodeAddress = chunk->flags.flag[index];
+    printf("%s ByteCode Address -%04d\n" , name ,  bytecodeAddress);
+    return offset+2;
+}
+
 int disassembleInstruction(Chunk* chunk , int offset){
     printf("%04d %d-> " , offset , chunk->lines[offset]);
 
@@ -160,6 +167,17 @@ int disassembleInstruction(Chunk* chunk , int offset){
         case OP_CALL : return disassembleCallInstruction("OP_CALL" , chunk , offset);
         case OP_EXIT : return printInstructer("OP_EXIT" , offset);
         case OP_PRINT : return printInstructer("OP_PRINT" , offset);
+        case OP_GOTO : return debugGoto("OP_GOTO" , chunk , offset);
+        case OP_GOTO_IF_FALSE : return debugGoto("OP_GOTO_IF_FALSE" , chunk , offset);
+        case OP_GOTO_IF_TRUE : return debugGoto("OP_GOTO_IF_TRUE" , chunk , offset);
+        case OP_GREATER : return printInstructer("OP_GREATER" , offset);
+        case OP_LESSER : return printInstructer("OP_LESSER" , offset);
+        case OP_GREAT_EQUAL : return printInstructer("OP_GREAT_EQUAL" , offset);
+        case OP_LESS_EQUAL : return printInstructer ("OP_LESS_EQUAL" , offset);
+        case OP_EQUAL_EQUAL : return printInstructer ("OP_EQUAL_EQUAL" , offset);
+        case OP_NOT_EQUAL : return printInstructer ("OP_NOT_EQUAL" , offset);
+        case OP_AND :return printInstructer("OP_AND" , offset);
+        case OP_OR : return printInstructer("OP_OR" , offset);
         default : printf("Unknow opCode %d\n",inst);
     }
     return offset+1;

@@ -187,6 +187,194 @@ bool isValue(tokenType type){
 
 
 
+// int buildBinTree(Token** tok,calcNodes* nodes , bool fr, bool comma ){
+//     Token* token = *tok;
+//     int current;
+//     Value tempVal;
+//     bool bra=0;
+//     if((token->type==TOKEN_LEFT_PAREN)&&(!fr)){
+//         token++;
+//         bra=1;
+//     }
+
+//     if((token->type==TOKEN_LEFT_PAREN)){
+//         current = buildBinTree(&token , nodes , 0 ,0);
+//     }
+//     else if(isOperator(token->type)){
+//         calcNode temp;
+//         iniNode(&temp);
+//         current = writeNodes(nodes , &temp);
+//         nodes->node[current].isleaf=0;
+//         nodes->node[current].val = token;
+        
+//         nodes->node[current].left= writeNodes(nodes , &temp);
+//         token++;
+//         if(token->type==TOKEN_LEFT_PAREN){
+//             nodes->node[current].right =  buildBinTree(&token, nodes , 0,0);
+//             nodes->node[nodes->node[current].right].parent = current;
+//         }
+//         else if(isValue(token->type)){
+//             temp.val = token;
+//             temp.isleaf = 1;
+//             nodes->node[current].right = writeNodes(nodes , &temp);
+//             nodes->node[nodes->node[current].right].parent = current;
+//             token++;
+//         }
+//         else if(token->type==TOKEN_IDENTIFIER){
+//             temp.val = token;
+//             temp.isleaf = 1;
+//             nodes->node[current].right = writeNodes(nodes , &temp);
+//             nodes->node[nodes->node[current].right].parent = current;
+//             token++;
+//             bool balance = 0;
+//             if(token->type==TOKEN_LEFT_PAREN){
+//                 token++;
+//                 balance =1;
+//             }
+//             while(balance){
+//                 if(token->type==TOKEN_LEFT_PAREN)balance++;
+//                 else if(token->type==TOKEN_RIGHT_PAREN)balance--;
+//                 token++;
+//             }
+//         }
+//         else compileError(token , "Expected a valid value");
+        
+//     }
+//     else if(isValue(token->type)) {
+//         calcNode temp;
+//         iniNode(&temp);
+//         temp.isleaf = 1;
+//         temp.val = token;
+//         current = writeNodes(nodes , &temp);
+//         token++;
+//     }
+//     else if(token->type==TOKEN_IDENTIFIER){
+//         calcNode temp;
+//         iniNode(&temp);
+//         temp.isleaf = 1;
+//         temp.val = token;
+//         current = writeNodes(nodes , &temp);
+//         token++;
+//         int balance = 0;
+//         if(token->type==TOKEN_LEFT_PAREN){
+//             balance =1;
+//             token++;
+//         }
+//         while(balance){
+//             if(token->type==TOKEN_LEFT_PAREN)balance++;
+//             else if(token->type==TOKEN_RIGHT_PAREN)balance--;
+//             token++;
+//         }
+//     }
+//     else {
+//         compileError(token , "Invalid syntax");
+//     }
+
+
+//     while((token->type !=TOKEN_EOL)&&(token->type != TOKEN_SEMICOLON)&&((fr&& (!comma))||(token->type!=TOKEN_RIGHT_PAREN))&&((!comma)||(token->type !=TOKEN_COMMA))){
+//         if(!isOperator(token->type))compileError(token , "expected a valid operator");
+//         int cur = isOperator(token->type);
+//         Token* ty = token;
+//         token++;
+//         // while((current->parent != NULL)){
+//         while(nodes->node[current].parent != -1){
+//             // int par = isOperator(current->parent->val->type);
+//             int par = isOperator(nodes->node[nodes->node[current].parent].val->type);
+//             if(cur<=par){
+//                 // current = current->parent;
+//                 current = nodes->node[current].parent;
+//             }
+//             else break;
+//         }
+//         int rightIndex = -1;
+//         calcNode rightNode;
+//         iniNode(&rightNode);
+//         if(token->type==TOKEN_LEFT_PAREN){
+//             rightIndex= buildBinTree(&token , nodes , 0 , 0);
+//         }
+        
+//         else if(isValue(token->type)){
+//             rightNode.isleaf=1;
+//             rightNode.val = token;
+//             rightIndex = writeNodes(nodes , &rightNode);
+//             token++;
+//         }
+//         else if(token->type==TOKEN_IDENTIFIER){
+//             rightNode.isleaf = 1;
+//             rightNode.val = token;
+
+//             token++;
+//             int balance =0;
+//             if(token->type==TOKEN_LEFT_PAREN){
+//                 balance=1;
+//                 token++;
+//             }
+//             while(balance){
+//                 if(token->type==TOKEN_LEFT_PAREN)balance++;
+//                 else if(token->type==TOKEN_RIGHT_PAREN)balance--;
+//                 token++;
+//             }
+//             rightIndex = writeNodes(nodes , &rightNode);
+//         }
+//         else compileError(token , "expected a valid value");
+
+
+//         // if(current->parent==NULL){.
+//         if(nodes->node[current].parent == -1){
+//             calcNode newParent;
+//             newParent.isleaf=0;
+//             newParent.parent= -1;
+//             newParent.val = ty;
+//             newParent.left = current;
+//             newParent.right = rightIndex;
+//             // current->parent = writeNodes(nodes , &newParent);
+//             int newParentIndex = writeNodes(nodes , &newParent);
+//             nodes->node[current].parent = newParentIndex;
+//             // current->parent->right->parent = current->parent;
+//             // current = current->parent->right;
+//             // nodes->node[nodes->node[nodes->node[current].parent].right].parent = nodes->node[current].parent;
+//             // current = nodes->node[nodes->node[current].parent].right;
+//             nodes->node[current].parent = newParentIndex;
+//             nodes->node[rightIndex].parent = newParentIndex;
+//             current = rightIndex;
+//         }
+//         else {
+            
+//             calcNode newNode;
+//             iniNode(&newNode);
+//             newNode.isleaf = 0;
+//             newNode.val = ty;
+//             // newNode.parent = current->parent;
+//             newNode.parent = nodes->node[current].parent;
+
+//             newNode.left = current;
+//             newNode.right = rightIndex;
+
+//             // current->parent = writeNodes(nodes , &newNode);
+//             // current = current->parent;
+//             // current->parent->right = current;
+//             // current->right->parent = current;
+//             // current = current->right;
+//             int newNodeIndex = writeNodes(nodes , &newNode);
+//             nodes->node[current].parent =newNodeIndex;
+//             nodes->node[nodes->node[current].parent].right = newNodeIndex;
+//             nodes->node[current].parent = newNodeIndex;
+//             nodes->node[rightIndex].parent = newNodeIndex;
+//             current = rightIndex;
+
+//         }
+
+//     }
+//     if(bra){
+//         if(token->type!=TOKEN_RIGHT_PAREN)compileError(token , "right paren not found");
+//         token++;
+//     }
+//     if(fr&& (!comma)) while(!((token->type==TOKEN_SEMICOLON)||(token->type==TOKEN_EOL)))token++;
+//     // while(current->parent!=NULL)current = current->parent;
+//     while(nodes->node[current].parent != -1)current = nodes->node[current].parent;
+//     *tok = token;
+//     return current;
+// }
 int buildBinTree(Token** tok,calcNodes* nodes , bool fr, bool comma ){
     Token* token = *tok;
     int current;
@@ -499,6 +687,7 @@ void executeBinTree(int current , calcNodes* nodes , Chunk* chunk  , varMaps* ma
 
         // writeChunk(chunk , OP_GOTO_IF_FALSE , current->val->line);
         // writeChunk(chunk , gotoIfFalse , current->val->line);
+
         writeChunk(chunk , OP_GOTO_IF_FALSE , nodes->node[current].val->line);
         writeChunk(chunk , gotoIfFalse , nodes->node[current].val->line);
 
@@ -562,6 +751,11 @@ void executeBinTree(int current , calcNodes* nodes , Chunk* chunk  , varMaps* ma
         }
         // writeChunk(chunk , op , current->val->line);
         writeChunk(chunk , op , nodes->node[current].val->line);
+
+        if(gotoIfFalse>=0){
+            writeChunk(chunk , OP_GOTO_IF_FALSE , -1);
+            writeChunk(chunk , gotoIfFalse , -1);
+        }
         return;
     }
 
@@ -736,7 +930,7 @@ void compileIf(Token** tok , Chunk* chunk , funcByte* func){
     if(token->type!= TOKEN_LEFT_PAREN)compileError(token , "Invalid syntax");
     calcNodes nodes;
     iniNodes(&nodes);
-    token++;
+    // token++;
     int current = buildBinTree(&token , &nodes , 0 , 0);
     int trueFlag = addFlag(chunk);
     int falseFlag = addFlag(chunk);
@@ -747,19 +941,25 @@ void compileIf(Token** tok , Chunk* chunk , funcByte* func){
     emitFlag(chunk , trueFlag);
     compileNewBranch(&token, chunk , func);
 
-    writeChunk(chunk , OP_GOTO , -1);
-    writeChunk(chunk , endFlag , -1);
+    if(token->type == TOKEN_ELSE){
+        writeChunk(chunk , OP_GOTO , -1);
+        writeChunk(chunk , endFlag , -1);
+    }
 
     bool eif =0;
+    bool hel = 1;
     while(token->type == TOKEN_ELSE){
+        hel=0;
         if(eif)compileError(token , "invalid syntax");
         emitFlag(chunk , falseFlag);
         token++;
         if(token->type == TOKEN_IF){
             token++;
+            if(token->type != TOKEN_LEFT_PAREN)compileError(token , "invalid syntax");
+            // token++;
             calcNodes subnodes;
             iniNodes(&subnodes);
-            int subcurrent = buildBinTree(&token , &subnodes , 1 , 0);
+            int subcurrent = buildBinTree(&token , &subnodes , 0 , 0);
             falseFlag = addFlag(chunk);
             trueFlag = addFlag(chunk);
             executeBinTree(subcurrent, &subnodes , chunk , &chunk->vars , func ,falseFlag , trueFlag);
@@ -769,11 +969,13 @@ void compileIf(Token** tok , Chunk* chunk , funcByte* func){
         while((token->type !=TOKEN_LEFT_BRACE)&&(token->type != TOKEN_EOL))token++;
         if(token->type == TOKEN_EOL)compileError(token , "invalid syntax");
         compileNewBranch(&token , chunk , func);
-        writeChunk(chunk , OP_GOTO , -1);
-        writeChunk(chunk , endFlag , -1);
-        token++;
+        if(token->type == TOKEN_ELSE){
+            writeChunk(chunk , OP_GOTO , -1);
+            writeChunk(chunk , endFlag , -1);
+        }
+        // token++;
     }
-    emitFlag(chunk , falseFlag);
+    if(hel)emitFlag(chunk , falseFlag);
     emitFlag(chunk , endFlag);
     *tok = token; 
 }
@@ -819,7 +1021,10 @@ void compileNewBranch(Token** tok , Chunk* chunk , funcByte* func){
     Token* end = token;
     while(bal&&(end->type != TOKEN_EOL)){
         if(end->type == TOKEN_LEFT_BRACE)bal++;
-        else if(end->type == TOKEN_RIGHT_BRACE)bal--;
+        else if(end->type == TOKEN_RIGHT_BRACE){
+            bal--;
+            if(bal==0)break;
+        }
         end++;
     }
     if(token->type == TOKEN_EOL)compileError(token , "close brace not found");
@@ -844,6 +1049,7 @@ void compileNewBranch(Token** tok , Chunk* chunk , funcByte* func){
         }
         
     }
+    token++;
     *tok = token;
 }
 

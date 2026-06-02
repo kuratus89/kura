@@ -21,7 +21,6 @@ typedef enum {
     OP_OR,
     OP_GOTO_IF_TRUE,
     OP_GOTO_IF_FALSE,
-    OP_FLAG,
     OP_GOTO,
     OP_STORE,
     OP_STORE_LOCAL ,
