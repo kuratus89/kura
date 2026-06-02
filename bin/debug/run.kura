@@ -1,4 +1,5 @@
-int a = 4;
+
+int a = 1;
 int b= 6;
 int c = 9;
 int d = 3;
@@ -9,15 +10,10 @@ int g = 99;
 if ((a > b || c != 0) && (d < e || f == g)) {
     print 1;
 }
-else {
+else{
     print 2;
 }
 
 
 
-//
 
-if (4>2){
-    print 4;
-}
-//

@@ -661,7 +661,7 @@ void executeBinTree(int current , calcNodes* nodes , Chunk* chunk  , varMaps* ma
             writeChunk(chunk , OP_GOTO_IF_FALSE , nodes->node[current].val->line);
             writeChunk(chunk , gotoIfFalse , nodes->node[current].val->line);
         }
-        
+
         emitFlag(chunk , newFlag);
 
         executeBinTree(nodes->node[current].right , nodes , chunk , maps , func , gotoIfFalse , gotoIfTrue);

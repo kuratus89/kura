@@ -1,14 +1,3 @@
-# globals.kura
-
-int base = 1000;
-
-func int withBase(int n) {
-    return base + n;
+if(4<2){
+    print 4;
 }
-
-func int scaled(int n, int factor) {
-    return withBase(n) * factor;
-}
-
-print withBase(42);       # 1042
-print scaled(5, 2);       # 2010

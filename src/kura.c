@@ -22,9 +22,9 @@ interpretResult interpret(char* source){
     disassembleFuncByte(&func);
     printf("\n<========== DEBUG VIRTUAL MACHINE ==========>\n");
     #endif
-    // iniVM(&func.global , func.func);
-    // return (run());
-    return (INTERPRET_OK);
+    iniVM(&func.global , func.func);
+    return (run());
+    // return (INTERPRET_OK);
 }
 
 static char* readFile(const char* path){
