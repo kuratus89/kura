@@ -143,7 +143,12 @@ int VarIoInstruction(const char* name , Chunk* chunk , int offset){
 int debugGoto(const char* name  , Chunk* chunk , int offset){
     uint8_t index = chunk->code[offset+1];
     int bytecodeAddress = chunk->flags.flag[index];
-    printf("%s ByteCode Address -%04d\n" , name ,  bytecodeAddress);
+    printf("%s ByteCode Address -> %04d\n" , name ,  bytecodeAddress);
+    return offset+2;
+}
+int debugUnload(const char* name , Chunk* chunk  , int offset){
+    uint8_t it = chunk->code[offset+1];
+    printf("%s index -> %d\n", name , it);
     return offset+2;
 }
 
@@ -178,6 +183,7 @@ int disassembleInstruction(Chunk* chunk , int offset){
         case OP_NOT_EQUAL : return printInstructer ("OP_NOT_EQUAL" , offset);
         case OP_AND :return printInstructer("OP_AND" , offset);
         case OP_OR : return printInstructer("OP_OR" , offset);
+        case OP_UNLOAD : return debugUnload("OP_UNLOAD" , chunk , offset);
         default : printf("Unknow opCode %d\n",inst);
     }
     return offset+1;

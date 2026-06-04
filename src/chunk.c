@@ -1,5 +1,5 @@
 
-#include "Chunk.h"
+#include "chunk.h"
 #include "memory.h"
 #include "compiler.h"
 #include "value.h"
@@ -18,6 +18,7 @@ void initilizeChunk(Chunk* chunk){
     chunk->flags.flag = NULL;
     initilizeValueArray(&chunk->constants);
     iniVarMaps(&chunk->vars);
+    
 }
 
 void writeChunk(Chunk* chunk , uint8_t byte , int line){

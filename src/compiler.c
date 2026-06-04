@@ -60,14 +60,43 @@ int writeVarMaps(varMaps* maps , varMap* map){
     return maps->count-1;
 }
 
+void writeKey(varMaps* maps , char* name , int x){
+    if(x>=maps->keyCapacity){
+        int oldCap = maps->keyCapacity;
+        maps->keyCapacity = growCapacity(x);
+        maps->keys = growArray(string , maps->keys , oldCap , maps->keyCapacity);
+        for(int i = oldCap ; i<maps->capacity ; i++){
+            (maps->keys+i)->value = NULL;
+            (maps->keys+i)->capacity = 0;
+        }
+    }
+    int cnt =0;
+    for(char* i= name ; *i!='\0' ; i++)cnt++;
+    cnt++;
+
+    if((maps->keys+x)->capacity!=cnt){
+        (maps->keys+x)->value = growArray(char , (maps->keys+x)->value , (maps->keys+x)->capacity , cnt);
+        (maps->keys+x)->capacity = cnt;
+    }
+    for(int i=0; i!=cnt; i++)(maps->keys+x)->value[i] = name[i];
+}
+
+char* getKey(varMaps* maps , int x){
+    return ((maps->keys+x)->value);
+}
+
+
+
 void iniVarMaps(varMaps* maps){
     maps->capacity=0;
     maps->count=0;
+    maps->keyCapacity=0;
     maps->maps = NULL;
-
+    maps->keys = NULL;
     varMap root;
     iniVarMap(&root);
     writeVarMaps(maps , &root);
+
 }
 
 
@@ -89,6 +118,17 @@ void declareKeyValue(varMaps* maps , char* key , int value , Token* errorToken ,
     maps->maps[ma].value = value;
     maps->maps[ma].type = type;
 }
+void deleteKeyValue(varMaps* maps , char* key , Token* errorToken){
+    int ma = 0;
+    for(char* it =key ; *it!='\0' ; it++){
+        int i = getMapInt(*it);
+        if(i<0)compileError(errorToken , "invalid character");
+        if(maps->maps[ma].child[i]<0)compileError(errorToken , "identifier is not defined");
+        ma = maps->maps[ma].child[i];
+    }
+    maps->maps[ma].isValue =0;
+}
+
 
 int getKeyValue(varMaps* maps , char* key , Token* errorToken){
     int ma = 0;
@@ -126,6 +166,11 @@ dataType getDataTypeKeyValue(varMaps* maps , char* key , Token* errorToken){
     return maps->maps[ma].type;
 }
 
+void unload(Chunk* chunk , int x , Token* errorToken){
+    for(int i=x ; i!=chunk->varCount ; i++)deleteKeyValue(&chunk->vars , getKey(&chunk->vars , i) , errorToken);
+    chunk->varCount = x;
+}
+
 
 int writeNodes(calcNodes* nodes , calcNode* node){
     if(nodes->capacity==nodes->count){
@@ -137,10 +182,6 @@ int writeNodes(calcNodes* nodes , calcNode* node){
     nodes->count++;
     return (nodes->count -1);
 }
-
-
-
-
 
 
 int isOperator(tokenType type){
@@ -676,7 +717,7 @@ void executeBinTree(int current , calcNodes* nodes , Chunk* chunk  , varMaps* ma
         return;
         
     }
-    else if((gotoIfFalse>=0)&&(nodes->node[current].val->type == TOKEN_OR_OR)){
+    else if((gotoIfTrue>=0)&&(nodes->node[current].val->type == TOKEN_OR_OR)){
         int newFlag = addFlag(chunk);
         executeBinTree(nodes->node[current].left , nodes , chunk , maps , func , newFlag , gotoIfTrue);
 
@@ -715,6 +756,8 @@ void executeBinTree(int current , calcNodes* nodes , Chunk* chunk  , varMaps* ma
         if(gotoIfFalse>=0){
             writeChunk(chunk , OP_GOTO_IF_FALSE , -1);
             writeChunk(chunk , gotoIfFalse , -1);
+        }
+        if(gotoIfTrue>=0){
             writeChunk(chunk , OP_GOTO , -1);
             writeChunk(chunk , gotoIfTrue , -1);
         }
@@ -776,6 +819,7 @@ void datastructures(Token** tok , Chunk* chunk , funcByte* func){
     char* key = tokenGetSource(token);
     declareKeyValue(&chunk->vars ,key , chunk->varCount , token , type);
     int val = chunk->varCount;
+    writeKey(&chunk->vars , key , val);
     chunk->varCount++;
     writeChunk(chunk , OP_DECLARE , token->line);
     writeChunk(chunk , type , token->line);
@@ -889,6 +933,7 @@ void compilePrint(Token** tok , Chunk* chunk , funcByte* func){
 void compileIf(Token** tok , Chunk* chunk , funcByte* func){
     Token* token = *tok;
     token++;
+    int varCount = chunk->varCount;
     if(token->type!= TOKEN_LEFT_PAREN)compileError(token , "Invalid syntax");
     calcNodes nodes;
     iniNodes(&nodes);
@@ -903,10 +948,12 @@ void compileIf(Token** tok , Chunk* chunk , funcByte* func){
     emitFlag(chunk , trueFlag);
     compileNewBranch(&token, chunk , func);
 
+    
     if(token->type == TOKEN_ELSE){
         writeChunk(chunk , OP_GOTO , -1);
         writeChunk(chunk , endFlag , -1);
     }
+    unload(chunk , varCount , token);
 
     bool eif =0;
     bool hel = 1;
@@ -935,10 +982,14 @@ void compileIf(Token** tok , Chunk* chunk , funcByte* func){
             writeChunk(chunk , OP_GOTO , -1);
             writeChunk(chunk , endFlag , -1);
         }
+        unload(chunk , varCount , token);
         // token++;
     }
     if(hel)emitFlag(chunk , falseFlag);
     emitFlag(chunk , endFlag);
+    writeChunk(chunk , OP_UNLOAD , -1);
+    writeChunk(chunk , varCount , -1);
+    unload(chunk , varCount , token);
     *tok = token; 
 }
 
@@ -1008,6 +1059,10 @@ void compileNewBranch(Token** tok , Chunk* chunk , funcByte* func){
                 compileIf(&token , chunk , func);
                 break;
             }
+            case TOKEN_RETURN :{
+                compileReturn(&token , chunk , func);
+                break;
+            }
         }
         
     }
@@ -1064,39 +1119,7 @@ void compileFunc(Tokens* tokens, funcByte* func ){
     Chunk* chunk = func->func+it;
     while((token->type !=TOKEN_LEFT_BRACE)&&(token->type != TOKEN_EOL))token++;    
     if(token->type != TOKEN_LEFT_BRACE)compileError(token , "invalid syntax");
-    int bal = 1;
-    Token* end = token;
-    token++;
-    while((bal)&&(end->type!=TOKEN_EOL)){
-        end++;
-        if(end->type==TOKEN_LEFT_BRACE)bal++;
-        else if(end->type==TOKEN_RIGHT_BRACE)bal--; 
-    }
-    if(end->type==TOKEN_EOL)compileError(token , "invalid syntax");
-    while(token!=end){
-        switch(token->type){
-            case TOKEN_DATA: {
-                datastructures(&token , chunk, func);
-                break;
-            }
-            case TOKEN_IDENTIFIER :{
-                identifier(&token , chunk, func);
-                break;
-            }
-            case TOKEN_RETURN :{
-                compileReturn(&token , chunk , func);
-                break;
-            }
-            case TOKEN_PRINT:{
-                compilePrint(&token , chunk , func);
-            }
-        }
-        while((token!=end)&&(token->type != TOKEN_SEMICOLON))token++;
-        if(token!=end)token++;
-    }
-
-
-    
+    compileNewBranch(&token , chunk , func);
 }
 
 void declareFunc(Tokens* tokens , funcByte* func){

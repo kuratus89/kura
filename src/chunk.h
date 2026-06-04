@@ -40,10 +40,17 @@ typedef struct{
     dataType type;
 }varMap;
 
+typedef struct{
+    int capacity;
+    char* value;
+}string;
+
 typedef struct {
     int count;
     int capacity;
     varMap* maps;
+    string* keys;
+    int keyCapacity;
 }varMaps;
 
 typedef struct{
@@ -71,6 +78,7 @@ typedef struct {
     int paraCount;
     int paraCapacity;
     Flags flags;
+
     
 }Chunk;
 typedef struct funcByte{

@@ -1,3 +1,7 @@
-if(4<2){
+int a = 44;
+if(a<9){
     print 4;
+}
+else {
+print 59;
 }

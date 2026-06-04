@@ -312,7 +312,7 @@ interpretResult run(){
                 iniValue(&value , DATA_BOOL);
                 switch(topStackVM()->type){
                     case DATA_INT:{
-                        *(bool*)value.value = *(int*)popStackVM()->type != *(int*)popStackVM()->type;
+                        *(bool*)value.value = *(int*)popStackVM()->value != *(int*)popStackVM()->value;
                         break;
                     }
                 }
@@ -417,6 +417,7 @@ interpretResult run(){
 
             case OP_UNLOAD : {
                 int it = (int)* nextInstruction();
+                
                 break;
             }
 
