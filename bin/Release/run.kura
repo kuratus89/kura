@@ -1,7 +1,9 @@
 int a = 44;
 if(a<9){
-    print 4;
+    int b  =5;
+	print b;
 }
 else {
-print 59;
+int c = 10;
+print c;
 }
