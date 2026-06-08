@@ -166,7 +166,7 @@ bool tokenizeKeywords(Token* token){
     };
     
     int low = 0;
-    int high = 11;
+    int high = 13;
     int mid;
     while(low<=high){
         mid = (low+high)/2;

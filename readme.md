@@ -345,7 +345,7 @@ Complete!
 - [ ] string data type
 - [ ] vectors
 - [X] functions
-- [ ] while loop
+- [X] while loop
 - [ ] for loop
 - [X] Expression evaluation
 - [ ] Custom memory system (stack and heap memory)
@@ -353,3 +353,5 @@ Complete!
 - [X] Print
 - [ ] Custom object definition
 - [X] Global variable
+- [ ] System Functions
+- [ ] add error when called return in global
