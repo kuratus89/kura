@@ -6,8 +6,8 @@
 #include "value.h"
 #include "compiler.h"
 void compileCallFunction(Token** tok , Chunk* chunk , funcByte* func);
-void compileNewBranch(Token** tok , Chunk* chunk , funcByte* func);
-void compileSingleLine(Token** tok , Chunk* chunk , funcByte* func);
+void compileNewBranch(Token** tok , Chunk* chunk , funcByte* func , int breakFlag , int continueFlag);
+void compileSingleLine(Token** tok , Chunk* chunk , funcByte* func , int breakFlag , int continueFlag);
 void compileError(Token* token , char* msg){
     printf("Error whiile compiling\n%s\nline: %d\ntoken type: %s\ntoken: %s" , msg , token->line ,disassembleTokenType(token->type) , tokenGetSource(token));
     exit(87);
@@ -990,8 +990,8 @@ void compileWhile(Token** tok , Chunk* chunk , funcByte* func){
     executeBinTree(current , &nodes , chunk , &chunk->vars , func , falseFlag , trueFlag );
 
     emitFlag(chunk , trueFlag);
-    if(token->type==TOKEN_LEFT_BRACE)compileNewBranch(&token , chunk , func);
-    else compileSingleLine(&token , chunk , func);
+    if(token->type==TOKEN_LEFT_BRACE)compileNewBranch(&token , chunk , func , falseFlag , startFlag);
+    else compileSingleLine(&token , chunk , func, falseFlag , startFlag);
     writeChunk(chunk , OP_GOTO , -1);
     writeChunk(chunk , startFlag , -1);
     emitFlag(chunk , falseFlag);    
@@ -1042,12 +1042,13 @@ void compileFor(Token** tok , Chunk* chunk , funcByte* func){
     if(token->type !=TOKEN_LEFT_PAREN)compileError(token , "invalid syntax");
     token++;
 
-    if(token->type !=TOKEN_SEMICOLON)compileSingleLine(&token , chunk , func);
+    if(token->type !=TOKEN_SEMICOLON)compileSingleLine(&token , chunk , func , -1 , -1);
     else token++;
 
     int falseFlag = addFlag(chunk);
     int trueFlag = addFlag(chunk);
     int startFlag = addFlag(chunk);
+    int  continueFlag = addFlag(chunk);
     emitFlag(chunk , startFlag);
 
     calcNodes nodes;
@@ -1058,7 +1059,7 @@ void compileFor(Token** tok , Chunk* chunk , funcByte* func){
     bool isinc;
     if(token->type==TOKEN_RIGHT_PAREN)isinc=0;
     else isinc =1;
-    Token* inc = token; 
+    Token* inc = token;
     int bal=1;
     while(bal&&(token->type !=TOKEN_EOL)){
         if(token->type==TOKEN_LEFT_PAREN)bal++;
@@ -1068,9 +1069,11 @@ void compileFor(Token** tok , Chunk* chunk , funcByte* func){
     if(token->type == TOKEN_EOL)compileError(token , "invalid syntax");
     emitFlag(chunk , trueFlag);
     Token* incEnd = token-1;
-    if(token->type ==TOKEN_LEFT_BRACE)compileNewBranch(&token , chunk , func);
-    else compileSingleLine(&token , chunk , func);
+    if(token->type ==TOKEN_LEFT_BRACE)compileNewBranch(&token , chunk , func , falseFlag , continueFlag);
+    else compileSingleLine(&token , chunk , func , falseFlag , continueFlag);
     incEnd->type = TOKEN_SEMICOLON;
+
+    emitFlag(chunk , continueFlag);
     if(isinc)identifier(&inc , chunk , func);
     incEnd->type = TOKEN_RIGHT_PAREN;
     writeChunk(chunk , OP_GOTO , -1);
@@ -1083,7 +1086,7 @@ void compileFor(Token** tok , Chunk* chunk , funcByte* func){
 }
 
 
-void compileIf(Token** tok , Chunk* chunk , funcByte* func){
+void compileIf(Token** tok , Chunk* chunk , funcByte* func , int breakFlag , int continueFlag){
     Token* token = *tok;
     if(token->type!=TOKEN_IF)compileError(token , "Invalid syntax");
     token++;
@@ -1099,8 +1102,8 @@ void compileIf(Token** tok , Chunk* chunk , funcByte* func){
     executeBinTree(current , &nodes , chunk , &chunk->vars , func , falseFlag , trueFlag);
     
     emitFlag(chunk , trueFlag);
-    if(token->type==TOKEN_LEFT_BRACE)compileNewBranch(&token, chunk , func);
-    else compileSingleLine(&token , chunk , func);
+    if(token->type==TOKEN_LEFT_BRACE)compileNewBranch(&token, chunk , func  , breakFlag , continueFlag);
+    else compileSingleLine(&token , chunk , func ,breakFlag , continueFlag);
     
     if(token->type == TOKEN_ELSE){
         writeChunk(chunk , OP_GOTO , -1);
@@ -1131,8 +1134,8 @@ void compileIf(Token** tok , Chunk* chunk , funcByte* func){
             token++;
         }
         else eif=1;
-        if(token->type==TOKEN_LEFT_BRACE)compileNewBranch(&token , chunk , func);
-        else compileSingleLine(&token , chunk , func);
+        if(token->type==TOKEN_LEFT_BRACE)compileNewBranch(&token , chunk , func , breakFlag , continueFlag);
+        else compileSingleLine(&token , chunk , func , breakFlag , continueFlag);
         if(token->type == TOKEN_ELSE){
             writeChunk(chunk , OP_GOTO , -1);
             writeChunk(chunk , endFlag , -1);
@@ -1180,7 +1183,7 @@ void compileIf(Token** tok , Chunk* chunk , funcByte* func){
 // line 7 | length 1 | TOKEN_SEMICOLON | ;
 // line 8 | length 1 | TOKEN_RIGHT_BRACE | }
 
-void compileNewBranch(Token** tok , Chunk* chunk , funcByte* func){
+void compileNewBranch(Token** tok , Chunk* chunk , funcByte* func , int breakFlag , int continueFlag){
     Token* token = *tok;
     if(token->type != TOKEN_LEFT_BRACE)compileError(token , "invalid syntax");
     token++;
@@ -1211,7 +1214,7 @@ void compileNewBranch(Token** tok , Chunk* chunk , funcByte* func){
                 break;
             }
             case TOKEN_IF:{
-                compileIf(&token , chunk , func);
+                compileIf(&token , chunk , func , breakFlag , continueFlag);
                 break;
             }
             case TOKEN_RETURN :{
@@ -1222,8 +1225,26 @@ void compileNewBranch(Token** tok , Chunk* chunk , funcByte* func){
                 compileWhile(&token , chunk , func);
                 break;
             }
-                case TOKEN_FOR:{
+            case TOKEN_FOR:{
                 compileFor(&token , chunk , func);
+                break;
+            }
+            case TOKEN_BREAK:{
+                if(breakFlag<0)compileError(token , "invalid syntax");
+                writeChunk(chunk , OP_GOTO , token->line);
+                writeChunk(chunk , breakFlag , token->line);
+                token++;
+                if(token->type ==TOKEN_SEMICOLON)token++;
+    
+                break;
+            }
+            case TOKEN_CONTINUE:{
+                if(continueFlag<0)compileError(token , "invalid syntax");
+                writeChunk(chunk , OP_GOTO , token->line);
+                writeChunk(chunk , continueFlag , token->line);
+                token++;
+                if(token->type==TOKEN_SEMICOLON)token++;
+
                 break;
             }
         }
@@ -1233,7 +1254,7 @@ void compileNewBranch(Token** tok , Chunk* chunk , funcByte* func){
     *tok = token;
 }
 
-void compileSingleLine(Token** tok , Chunk* chunk , funcByte* func){
+void compileSingleLine(Token** tok , Chunk* chunk , funcByte* func ,int breakFlag, int continueFlag){
     Token* token = *tok;
     switch(token->type){
         case TOKEN_DATA :{
@@ -1249,7 +1270,8 @@ void compileSingleLine(Token** tok , Chunk* chunk , funcByte* func){
             break;
         }
         case TOKEN_IF:{
-            compilePrint(&token , chunk , func);
+            compileIf(&token , chunk , func , breakFlag ,continueFlag);
+            break;
         }
         case TOKEN_RETURN:{
             compileReturn(&token , chunk , func);
@@ -1261,6 +1283,22 @@ void compileSingleLine(Token** tok , Chunk* chunk , funcByte* func){
         }
         case TOKEN_FOR:{
             compileFor(&token , chunk , func);
+            break;
+        }
+        case TOKEN_BREAK:{
+            if(breakFlag<0)compileError(token , "invalid syntax");
+            writeChunk(chunk , OP_GOTO , -1);
+            writeChunk(chunk , breakFlag ,  -1);
+            token++;
+            if(token->type == TOKEN_SEMICOLON)token++;
+            break;
+        }
+        case TOKEN_CONTINUE:{
+            if(continueFlag<0)compileError(token , "invalid syntax");
+            writeChunk(chunk , OP_GOTO , -1);
+            writeChunk(chunk , continueFlag , -1);
+            token++;
+            if(token->type ==TOKEN_SEMICOLON)token++;
             break;
         }
         default:{
@@ -1290,7 +1328,7 @@ void compileGlobal(Tokens* global ,funcByte* func){
                 break;
             }
             case TOKEN_IF : {
-                compileIf(&it , &func->global , func);
+                compileIf(&it , &func->global , func , -1 , -1);
                 break;
             }
             case TOKEN_WHILE:{
@@ -1325,9 +1363,9 @@ void compileFunc(Tokens* tokens, funcByte* func ){
     char* funcName = tokenGetSource(token);
     int it = getKeyValue(&func->vars , funcName , token);
     Chunk* chunk = func->func+it;
-    while((token->type !=TOKEN_LEFT_BRACE)&&(token->type != TOKEN_EOL))token++;    
+    while((token->type !=TOKEN_LEFT_BRACE)&&(token->type != TOKEN_EOL))token++;
     if(token->type != TOKEN_LEFT_BRACE)compileError(token , "invalid syntax");
-    compileNewBranch(&token , chunk , func);
+    compileNewBranch(&token , chunk , func , -1 , -1);
 }
 
 void declareFunc(Tokens* tokens , funcByte* func){

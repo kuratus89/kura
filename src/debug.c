@@ -163,6 +163,7 @@ int disassembleInstruction(Chunk* chunk , int offset){
         case OP_SUB : return printInstructer("OP_SUB" , offset);
         case OP_MUL : return printInstructer("OP_MUL" , offset);
         case OP_DIV : return printInstructer("OP_DIV" , offset);
+        case OP_MOD : return printInstructer("OP_MOD" , offset);
         case OP_NEGATE : return printInstructer("OP_NEGATE" , offset);
         case OP_DECLARE : return declareInstruction("OP_DECLARE" , chunk ,offset);
         case OP_STORE : return VarIoInstruction("OP_STORE_VAR" , chunk , offset);
