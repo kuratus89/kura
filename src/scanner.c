@@ -82,8 +82,8 @@ bool charScan(scanPtr* scan , scar* fs){
 }
 
 void doubleSign(scanPtr* scan){
-    int doubleSign[] = {'!' , '=' , '&' , '&' , '<' , '=' , '>' , '=' , '=' , '=' , '+' , '=' , '-' , '=' , '|' , '|' };
-    for(int i=0 ; i<16 ; i+=2){
+    int doubleSign[] = {'!' , '=' , '&' , '&' , '<' , '=' , '>' , '=' , '=' , '=' , '+' , '=' , '-' , '=' , '|' , '|' , '+' , '+' , '-' , '-'};
+    for(int i=0 ; i<20 ; i+=2){
         if((*scan->end==doubleSign[i])&&(*(scan->end+1)==doubleSign[i+1])){
             scan->end+=2;
             return;

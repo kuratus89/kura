@@ -102,20 +102,28 @@ bool tokenizeDoubleSign(Token* token){
     char value = *token->start;
     if(((value>='a')&&(value<='z'))||((value>='A')&&(value<='Z'))||((value>='0')&&(value<='9')))return 0;
     
-    int firstDigit[] = {'!' , '&' , '+' , '-' , '<' , '=' , '>' , '|' };
-    int secondDigit[] = {'=' , '&' , '=' , '=' , '=' , '=' , '=' , '|'} ;
-    int* it = find(firstDigit ,  value , 8 , 1);
-    if(it==NULL)return 0;
-    int index = it - firstDigit;
-    if(*(token->start+1)!=secondDigit[index])return 0;
+    int firstDigit[] = {'!' , '&' , '+' , '-' , '<' , '=' , '>' , '|' , '+' , '-'};
+    int secondDigit[] = {'=' , '&' , '=' , '=' , '=' , '=' , '=' , '|' , '+' , '-' } ;
+    // int* it = find(firstDigit ,  value , 8 , 1);
+    // if(it==NULL)return 0;
+    // int index = it - firstDigit;
+    // if(*(token->start+1)!=secondDigit[index])return 0;
+    int it=-1;
+    for(int i=0 ; i<10 ; i++){
+        if((firstDigit[i]==value)&&(secondDigit[i]==(*(token->start+1)))){
+            it =i;
+            break;
+        }
+    }
+    if(it<0)return 0;
 
     tokenType type[] = {
     TOKEN_BANG_EQUAL , TOKEN_AND_AND , TOKEN_PLUS_EQUAL , 
     TOKEN_MINUS_EQUAL , TOKEN_LESSER_EQUAL ,  TOKEN_EQUAL_EQUAL ,
-    TOKEN_GREATER_EQUAL , TOKEN_OR_OR
+    TOKEN_GREATER_EQUAL , TOKEN_OR_OR , TOKEN_PLUS_PLUS , TOKEN_MINUS_MINUS ,
     };
-    token->type = type[index];
-    return 1;    
+    token->type = type[it];
+    return 1;
 }
 
 bool tokenizeString(Token* token){

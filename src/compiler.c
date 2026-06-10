@@ -911,6 +911,30 @@ void identifier(Token** tok , Chunk* chunk , funcByte* func){
                     writeChunk(chunk , OP_SUB , token->line);
                     break;
                 }
+                case TOKEN_PLUS_PLUS:{
+                    Value value;
+                    iniValue(&value , DATA_INT);
+                    *(int*)value.value =1;
+                    int i = writeValueArray(&chunk->constants , &value);
+                    writeChunk(chunk , OP_LOAD_VAR_LOCAL , token->line);
+                    writeChunk(chunk , it , token->line);
+                    writeChunk(chunk , OP_LOAD_CONSTANT , token->line);
+                    writeChunk(chunk , i , token->line);
+                    writeChunk(chunk , OP_ADD , token->line);   
+                    break;             
+                }
+                case TOKEN_MINUS_MINUS:{
+                    Value value;
+                    iniValue(&value , DATA_INT);
+                    *(int*)value.value = 1;
+                    int i = writeValueArray(&chunk->constants , &value);
+                    writeChunk(chunk , OP_LOAD_VAR_LOCAL , token->line);
+                    writeChunk(chunk , it , token->line);
+                    writeChunk(chunk , OP_LOAD_CONSTANT , token->line);
+                    writeChunk(chunk , i , token->line);
+                    writeChunk(chunk , OP_SUB , token->line);
+                    break;
+                }
             }
             writeChunk(chunk , OP_STORE_LOCAL , token->line);
             writeChunk(chunk , it , token->line);
