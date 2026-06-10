@@ -169,6 +169,28 @@ interpretResult run(){
                 }
                 break;
             }
+            case OP_MOD:{
+                if(vm.stackTop - vm.stack <2){
+                    runTimeError(vm.currentFunc->ip , "stack underflow");
+                    return(INTERPRET_RUNTIME_ERROR);
+                }
+                if(topStackVM()->type !=(topStackVM()-1)->type){
+                    runTimeError(vm.currentFunc->ip , "cannot mod values of diffrent data types");
+                    return(INTERPRET_RUNTIME_ERROR);
+                }
+                Value value;
+                switch(topStackVM()->type){
+                    case(DATA_INT):{
+                        int x = *(int*)popStackVM()->value;
+                        int y = *(int*)popStackVM()->value;
+                        iniValue(&value , DATA_INT);
+                        *(int*)value.value = y%x;
+                        break;
+                    }
+                }
+                pushStackVM(&value);
+                break;
+            }
             
             case OP_NEGATE :{
                 if(vm.stackTop==vm.stack){
@@ -183,6 +205,7 @@ interpretResult run(){
                 }
                 break;
             }
+
             case OP_GREATER : {
                 if(vm.stackTop - vm.stack <2){
                     runTimeError(vm.currentFunc->ip , "stack underflow");

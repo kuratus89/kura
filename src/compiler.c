@@ -682,7 +682,7 @@ void executeBinTree(int current , calcNodes* nodes , Chunk* chunk  , varMaps* ma
         if(nodes->node[current].val->type == TOKEN_MINUS)writeChunk(chunk , OP_NEGATE , nodes->node[current].val->line);
         return;
     }
-    if((nodes->node[current].val->type == TOKEN_PLUS)||(nodes->node[current].val->type ==TOKEN_MINUS)||(nodes->node[current].val->type ==TOKEN_STAR)||(nodes->node[current].val->type == TOKEN_SLASH)){
+    if((nodes->node[current].val->type == TOKEN_PLUS)||(nodes->node[current].val->type ==TOKEN_MINUS)||(nodes->node[current].val->type ==TOKEN_STAR)||(nodes->node[current].val->type == TOKEN_SLASH)||(nodes->node[current].val->type ==TOKEN_PERCENT)){
 
         executeBinTree(nodes->node[current].left  , nodes , chunk , maps , func , gotoIfFalse , gotoIfTrue);
         executeBinTree(nodes->node[current].right , nodes , chunk , maps , func , gotoIfFalse , gotoIfTrue);
@@ -889,10 +889,32 @@ void identifier(Token** tok , Chunk* chunk , funcByte* func){
                     iniNodes(&nodes);
                     int current = buildBinTree(&token  ,&nodes , 1 , 0);
                     executeBinTree(current, &nodes ,  chunk , &chunk->vars , func , -1 , -1);
+                    break;
+                }
+                case TOKEN_PLUS_EQUAL:{
+                    calcNodes nodes;
+                    iniNodes(&nodes);
+                    int current =buildBinTree(&token , &nodes , 1 , 0);
+                    writeChunk(chunk , OP_LOAD_VAR_LOCAL , token->line);
+                    writeChunk(chunk , it , token->line);
+                    executeBinTree(current , &nodes , chunk , &chunk->vars , func , -1 , -1);
+                    writeChunk(chunk , OP_ADD , token->line);
+                    break;
+                }
+                case TOKEN_MINUS_EQUAL:{
+                    calcNodes nodes;
+                    iniNodes(&nodes);
+                    int current = buildBinTree(&token , &nodes , 1,  0);
+                    writeChunk(chunk , OP_LOAD_VAR_LOCAL , token->line);
+                    writeChunk(chunk , it , token->line);
+                    executeBinTree(current , &nodes , chunk , &chunk->vars , func , -1 , -1);
+                    writeChunk(chunk , OP_SUB , token->line);
+                    break;
                 }
             }
             writeChunk(chunk , OP_STORE_LOCAL , token->line);
             writeChunk(chunk , it , token->line);
+            
         }
         else {
             int it =getKeyValue(&func->global.vars , key , token);
@@ -907,6 +929,27 @@ void identifier(Token** tok , Chunk* chunk , funcByte* func){
                     
                     int current = buildBinTree(&token  , &nodes ,1 , 0);
                     executeBinTree(current ,&nodes , chunk , &func->global.vars , func , -1 , -1);
+                    break;
+                }
+                case TOKEN_PLUS_EQUAL:{
+                    calcNodes nodes;
+                    iniNodes(&nodes);
+                    int current = buildBinTree(&token , &nodes , 1 , 0);
+                    writeChunk(chunk , OP_LOAD_VAR , token->line);
+                    writeChunk(chunk , it , token->line);
+                    executeBinTree(current , &nodes , chunk , &func->global.vars , func , -1 , -1);
+                    writeChunk(chunk , OP_ADD , token->line);
+                    break;
+                }
+                case TOKEN_MINUS_EQUAL:{
+                    calcNodes nodes;
+                    iniNodes(&nodes);
+                    int current = buildBinTree(&token, &nodes , 1 , 0);
+                    writeChunk(chunk , OP_LOAD_VAR , token->line);
+                    writeChunk(chunk , it , token->line);
+                    executeBinTree(current , &nodes , chunk , &func->global.vars , func , -1 , -1);
+                    writeChunk(chunk , OP_SUB , token->line);
+                    break;
                 }
             }
             writeChunk(chunk , OP_STORE , token->line);
@@ -951,16 +994,93 @@ void compileWhile(Token** tok , Chunk* chunk , funcByte* func){
     else compileSingleLine(&token , chunk , func);
     writeChunk(chunk , OP_GOTO , -1);
     writeChunk(chunk , startFlag , -1);
-    emitFlag(chunk , falseFlag);
+    emitFlag(chunk , falseFlag);    
     unload(chunk , varCount , token);
+    writeChunk(chunk , OP_UNLOAD , -1);
+    writeChunk(chunk , varCount , -1);
     *tok = token;
 }
 
+// void compileFor(Token** tok , Chunk* chunk , funcByte* func){
+//     Token* token = *tok;
+//     int varCount = chunk->varCount;
+//     if(token->type != TOKEN_FOR)compileError(token , "invalid syntax");
+//     token++;
+//     if(token->type !=TOKEN_LEFT_PAREN)compileError(token , "invalid syntax");
+//     token++;
+//     if(token->type!=TOKEN_SEMICOLON)compileSingleLine(&token , chunk , func);
+//     else token++;
+
+//     int falseFlag = addFlag(chunk);
+//     int trueFlag = addFlag(chunk);
+//     int startFlag = addFlag(chunk);
+//     emitFlag(chunk , startFlag);
+//     calcNodes nodes;
+//     iniNodes(&nodes);
+//     int current = buildBinTree(&token , &nodes , 1 , 0);
+//     executeBinTree(current , &nodes , chunk ,&chunk->vars , func , falseFlag , trueFlag);
+//     token++;
+//     if(token->type !=TOKEN_RIGHT_PAREN)identifier(&token , chunk , func);
+//     else token++;
+
+//     emitFlag(chunk , trueFlag);
+//     if(token->type ==TOKEN_LEFT_BRACE)compileNewBranch(&token , chunk , func);
+//     else compileSingleLine(&token , chunk , func);
+//     writeChunk(chunk , OP_GOTO , -1);
+//     writeChunk(chunk , startFlag , -1);
+//     emitFlag(chunk , falseFlag);
+//     writeChunk(chunk , OP_UNLOAD , -1);
+//     writeChunk(chunk , varCount , -1);
+//     unload(chunk , varCount , token);
+// }
+
 void compileFor(Token** tok , Chunk* chunk , funcByte* func){
     Token* token = *tok;
-    
-}
+    int varCount = chunk->varCount;
+    if(token->type !=TOKEN_FOR)compileError(token , "invalid syntax");
+    token++;
+    if(token->type !=TOKEN_LEFT_PAREN)compileError(token , "invalid syntax");
+    token++;
 
+    if(token->type !=TOKEN_SEMICOLON)compileSingleLine(&token , chunk , func);
+    else token++;
+
+    int falseFlag = addFlag(chunk);
+    int trueFlag = addFlag(chunk);
+    int startFlag = addFlag(chunk);
+    emitFlag(chunk , startFlag);
+
+    calcNodes nodes;
+    iniNodes(&nodes);
+    int current = buildBinTree(&token , &nodes , 1 , 0);
+    executeBinTree(current , &nodes ,chunk , &chunk->vars , func , falseFlag , trueFlag);
+    if(token->type ==TOKEN_SEMICOLON )token++;
+    bool isinc;
+    if(token->type==TOKEN_RIGHT_PAREN)isinc=0;
+    else isinc =1;
+    Token* inc = token; 
+    int bal=1;
+    while(bal&&(token->type !=TOKEN_EOL)){
+        if(token->type==TOKEN_LEFT_PAREN)bal++;
+        else if(token->type == TOKEN_RIGHT_PAREN)bal--;
+        token++;
+    }
+    if(token->type == TOKEN_EOL)compileError(token , "invalid syntax");
+    emitFlag(chunk , trueFlag);
+    Token* incEnd = token-1;
+    if(token->type ==TOKEN_LEFT_BRACE)compileNewBranch(&token , chunk , func);
+    else compileSingleLine(&token , chunk , func);
+    incEnd->type = TOKEN_SEMICOLON;
+    if(isinc)identifier(&inc , chunk , func);
+    incEnd->type = TOKEN_RIGHT_PAREN;
+    writeChunk(chunk , OP_GOTO , -1);
+    writeChunk(chunk , startFlag , -1);
+    emitFlag(chunk , falseFlag);
+    writeChunk(chunk , OP_UNLOAD , -1);
+    writeChunk(chunk , varCount , -1);
+    unload(chunk , varCount , token);
+    *tok = token;
+}
 
 
 void compileIf(Token** tok , Chunk* chunk , funcByte* func){
@@ -1102,6 +1222,10 @@ void compileNewBranch(Token** tok , Chunk* chunk , funcByte* func){
                 compileWhile(&token , chunk , func);
                 break;
             }
+                case TOKEN_FOR:{
+                compileFor(&token , chunk , func);
+                break;
+            }
         }
         
     }
@@ -1133,6 +1257,11 @@ void compileSingleLine(Token** tok , Chunk* chunk , funcByte* func){
         }
         case TOKEN_WHILE:{
             compileWhile(&token , chunk , func);
+            break;
+        }
+        case TOKEN_FOR:{
+            compileFor(&token , chunk , func);
+            break;
         }
         default:{
             compileError(token , "Invalid syntax");
@@ -1166,6 +1295,10 @@ void compileGlobal(Tokens* global ,funcByte* func){
             }
             case TOKEN_WHILE:{
                 compileWhile(&it , &func->global , func);
+                break;
+            }
+            case TOKEN_FOR:{
+                compileFor(&it , &func->global , func);
                 break;
             }
         }
