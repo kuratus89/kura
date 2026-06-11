@@ -40,6 +40,8 @@ char* disassembleTokenType(tokenType type){
         case TOKEN_BANG_EQUAL:        return("TOKEN_BANG_EQAUL");
         case TOKEN_MINUS_EQUAL:       return("TOKEN_MINUS_EQUAL");
         case TOKEN_PLUS_EQUAL:        return("TOKEN_PLUS_EQUAL");
+        case TOKEN_PLUS_PLUS:         return("TOKEN_PLUS_PLUS");
+        case TOKEN_MINUS_MINUS:       return("TOKEN_MINUS_MINUS");
 
         //KEYWORDS AND LITRALS
 

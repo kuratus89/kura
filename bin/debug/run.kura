@@ -2,7 +2,7 @@ func int square(int x) {
     return x * x;
 }
 
-func int work(int n) {
+func int work() {
     int sum = 0;
 
     for (int i = 1; i <= n; i++) {
@@ -27,5 +27,5 @@ func int work(int n) {
     return sum;
 }
 
-
-print(work(10));
+int n = 10;
+print(work());
