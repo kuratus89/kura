@@ -66,7 +66,7 @@ void writeKey(varMaps* maps , char* name , int x){
         int oldCap = maps->keyCapacity;
         maps->keyCapacity = growCapacity(x);
         maps->keys = growArray(string , maps->keys , oldCap , maps->keyCapacity);
-        for(int i = oldCap ; i<maps->capacity ; i++){
+        for(int i = oldCap ; i<maps->keyCapacity ; i++){
             (maps->keys+i)->value = NULL;
             (maps->keys+i)->capacity = 0;
         }
@@ -811,6 +811,7 @@ void compileReturn(Token** tok , Chunk* chunk , funcByte* func){
     int current = buildBinTree(&token  , &nodes , 1 , 0 );
     executeBinTree(current , &nodes , chunk  , &chunk->vars , func , -1 , -1);
     writeChunk(chunk , OP_RETURN , token->line);
+    token++;
     *tok = token;
 }
 

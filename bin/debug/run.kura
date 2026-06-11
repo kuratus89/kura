@@ -1,8 +1,8 @@
-int square(int x) {
+func int square(int x) {
     return x * x;
 }
 
-int work(int n) {
+func int work(int n) {
     int sum = 0;
 
     for (int i = 1; i <= n; i++) {

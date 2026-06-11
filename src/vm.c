@@ -248,7 +248,7 @@ interpretResult run(){
                     case DATA_INT :{
                         int rhs = *(int*)popStackVM()->value;
                         int lhs = *(int*)popStackVM()->value;
-                        *(int*)value.value = rhs>lhs;
+                        *(bool*)value.value = rhs>lhs;
                         break;
                     }
                 }
@@ -271,7 +271,7 @@ interpretResult run(){
                     case DATA_INT:{
                         int rhs = *(int*)popStackVM()->value;
                         int lhs = *(int*)popStackVM()->value;
-                        *(int*)value.value= lhs <=rhs;
+                        *(bool*)value.value= lhs <=rhs;
                         break;
                     }
                 }
