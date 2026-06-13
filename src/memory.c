@@ -1,12 +1,10 @@
 #include "common.h"
 #include "memory.h"
-
+Memory memory;
 int growCapacity(int oldCap){
     if(oldCap==0)return 8;
     return (oldCap)*2;
 }
-
-
 
 void* reallocate(void* pointer , size_t old_Size ,size_t new_Size){
     if(new_Size==0){
@@ -36,4 +34,55 @@ int* find(int* start, int value ,int length , bool isSort){
         else low = mid+1;
     }
     return NULL;    
+}
+
+void iniMemory(){
+    memory.stackCount  = 0;
+    memory.stackElementCount = 0;
+    memory.stackElementCapacity = 0;
+    memory.stack = malloc(MEMORY_STACK_MAX);
+    memory.stackElementSize = NULL;
+}
+
+void addElementSize(int x){
+    if(memory.stackElementCount == memory.stackElementCapacity){
+        int oldCap = memory.stackElementCapacity;
+        memory.stackElementCapacity = growCapacity(oldCap);
+        memory.stackElementSize = growArray(int , memory.stackElementSize , oldCap , memory.stackElementCapacity);
+    }
+    if(memory.stackElementCount==0)memory.stackElementSize[memory.stackElementCount] = x;
+    else memory.stackElementSize[memory.stackElementCount] = x + memory.stackElementSize[memory.stackElementCount -1];
+    memory.stackElementCount++;
+}
+
+int topStackSize(){
+    if(memory.stackElementCount == 0) return -1;
+    if(memory.stackElementCount==1)return memory.stackElementSize[0];
+    else return memory.stackElementSize[memory.stackElementCount-1 ] - memory.stackElementSize[memory.stackElementCount - 2];
+}
+
+
+void* allocateStackMemory(int size){
+    addElementSize(size);
+    memory.stackCount+=size;
+    if(memory.stackCount>= MEMORY_STACK_MAX){
+        printf("memory stack overFlow");
+        exit(909);
+    }
+    return memory.stack+ memory.stackCount - size;
+}
+
+void freeStack(int index){
+    int it;
+    if(index==0)it =0;
+    else it = memory.stackElementSize[index-1];
+    memory.stackCount = it;
+    memory.stackElementCount = index;
+}
+
+void* getStackValue(int index){
+    int it;
+    if(index==0)it = 0;
+    else it = memory.stackElementSize[index-1];
+    return memory.stack+it;
 }

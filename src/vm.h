@@ -28,7 +28,6 @@ typedef struct{
     int varFuncCount;
     Chunk* Functions;
     valueArray vars;
-
 }VM;
 
 

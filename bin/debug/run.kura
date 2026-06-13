@@ -1,31 +1,20 @@
-func int square(int x) {
-    return x * x;
-}
+func int sqrtbinary (int x) {
+    int left = 0;
+    int right = x;
+    int ans = 0;
 
-func int work() {
-    int sum = 0;
+    while (left <= right) {
+        int mid = left + (right - left) / 2;
 
-    for (int i = 1; i <= n; i++) {
-
-        if (i % 7 == 0) {
-            continue;
-        }
-
-        int j = 0;
-
-        while (j < i) {
-
-            if (j == 5) {
-                break;
-            }
-
-            sum = sum + square(i + j);
-            j = j + 1;
+        if (mid * mid <= x) {
+            ans = mid;
+            left = mid + 1;
+        } else {
+            right = mid - 1;
         }
     }
 
-    return sum;
+    return ans;
 }
 
-int n = 10;
-print(work());
+print sqrtbinary(0);
