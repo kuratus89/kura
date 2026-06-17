@@ -41,7 +41,17 @@ inline void iniValue(Value* value , dataType type){
         return;
     }
     value->value = malloc(value->size);
-    // i will make stack and heap memory system later
+    // value->value = allocateStackMemory(value->size);
+}
+
+inline void iniStackValue(Value* value , dataType type){
+    value->type = type;
+    value->size = dataSize[(int)type];
+    if(value ->size ==0){
+        value->value = NULL;
+        return;
+    }
+    value->value = allocateStackMemory(value->size);
 }
 inline Value cloneValue(Value* value){
     Value val;

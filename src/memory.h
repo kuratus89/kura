@@ -13,15 +13,17 @@ sizeof(type) * (newCount))
 void* reallocate(void* pointer , size_t oldSize , size_t newSize);
 int* find(int* start , int value , int length , bool isSort);
 
-
-
+typedef struct{
+    int stackElementSize;
+    Value* value;
+}valueData;
 
 typedef struct {
     void* stack;
     int stackCount;
-    int* stackElementSize;
-    int stackElementCount;
-    int stackElementCapacity;
+    valueData* stackValueData;
+    int stackValueDataCount;
+    int stackValueDataCapacity;
 }Memory;
 
 void iniMemory();

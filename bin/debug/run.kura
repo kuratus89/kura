@@ -17,4 +17,4 @@ func int sqrtbinary (int x) {
     return ans;
 }
 
-print sqrtbinary(0);
+print sqrtbinary(305*305);

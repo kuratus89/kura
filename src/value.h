@@ -36,6 +36,7 @@ void writeValueArrayIndex(valueArray* array , Value* value , int index);
 void freeValueArray(valueArray* array);
 
 void iniValue(Value* value , dataType type);
+void iniStackValue(Value* value , dataType type);
 void writeValue(Value* value , void* val);
 dataType getDataType( struct Token* token);
 void insertDataToValue(struct Token* token , Value* value);

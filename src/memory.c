@@ -38,21 +38,32 @@ int* find(int* start, int value ,int length , bool isSort){
 
 void iniMemory(){
     memory.stackCount  = 0;
-    memory.stackElementCount = 0;
-    memory.stackElementCapacity = 0;
+    memory.stackValueDataCount = 0;
+    memory.stackValueDataCapacity = 0;
+    memory.stackValueData = NULL;
     memory.stack = malloc(MEMORY_STACK_MAX);
-    memory.stackElementSize = NULL;
 }
 
-void addElementSize(int x){
-    if(memory.stackElementCount == memory.stackElementCapacity){
-        int oldCap = memory.stackElementCapacity;
-        memory.stackElementCapacity = growCapacity(oldCap);
-        memory.stackElementSize = growArray(int , memory.stackElementSize , oldCap , memory.stackElementCapacity);
+// void addElementSize(int x){
+//     if(memory.stackElementCount == memory.stackElementCapacity){
+//         int oldCap = memory.stackElementCapacity;
+//         memory.stackElementCapacity = growCapacity(oldCap);
+//         memory.stackElementSize = growArray(int , memory.stackElementSize , oldCap , memory.stackElementCapacity);
+//     }
+//     if(memory.stackElementCount==0)memory.stackElementSize[memory.stackElementCount] = x;
+//     else memory.stackElementSize[memory.stackElementCount] = x + memory.stackElementSize[memory.stackElementCount -1];
+//     memory.stackElementCount++;
+
+// }
+void addValueData(int x ,  int offset){
+    if(memory.stackValueDataCount==memory.stackValueDataCapacity){
+        int oldCap = memory.stackValueDataCapacity;
+        memory.stackValueDataCapacity = growCapacity(oldCap);
+        memory.stackValueData = growArray(valueData , memory.stackValueData , oldCap , memory.stackValueDataCapacity);
     }
-    if(memory.stackElementCount==0)memory.stackElementSize[memory.stackElementCount] = x;
-    else memory.stackElementSize[memory.stackElementCount] = x + memory.stackElementSize[memory.stackElementCount -1];
-    memory.stackElementCount++;
+    (memory.stackValueData+memory.stackValueDataCount)->stackElementSize = x+offset;
+    (memory.stackValueData+memory.stackValueDataCount)->value.size = x;
+        
 }
 
 int topStackSize(){
@@ -86,3 +97,4 @@ void* getStackValue(int index){
     else it = memory.stackElementSize[index-1];
     return memory.stack+it;
 }
+

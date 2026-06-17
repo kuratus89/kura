@@ -46,6 +46,7 @@ static inline Feeder* pushNewFeed(Chunk* chunk , bool ini, int varsCount){
 void iniVM(Chunk* chunk , Chunk* func){
     resetStack();
     initilizeValueArray(&vm.vars);
+    iniMemory();
     vm.vars.capacity =  VAR_STACK_MAX;
     vm.vars.values = growArray(Value , vm.vars.values , 0 , vm.vars.capacity);
     pushNewFeed(chunk , 1 , 0);
@@ -182,9 +183,10 @@ interpretResult run(){
                 switch(topStackVM()->type){
                     case(DATA_INT):{
                         int x = *(int*)popStackVM()->value;
-                        int y = *(int*)popStackVM()->value;
-                        iniValue(&value , DATA_INT);
-                        *(int*)value.value = y%x;
+                        // int y = *(int*)popStackVM()->value;
+                        // iniStackValue(&value , DATA_INT);
+                        *(int*)topStackVM()->value = *(int*)topStackVM()->value%x;
+                        // *(int*)value.value = y%x;
                         break;
                     }
                 }
@@ -218,7 +220,8 @@ interpretResult run(){
                 }
 
                 Value value;
-                iniValue(&value , DATA_BOOL);
+                // iniValue(&value , DATA_BOOL);
+                iniStackValue(&value , DATA_BOOL);
                 bool ans;
 
                 switch(topStackVM()->type){
@@ -243,7 +246,8 @@ interpretResult run(){
                     return(INTERPRET_RUNTIME_ERROR);
                 }
                 Value value;
-                iniValue(&value , DATA_BOOL);
+                // iniValue(&value , DATA_BOOL);
+                iniStackValue(&value , DATA_BOOL);
                 switch(topStackVM()->type){
                     case DATA_INT :{
                         int rhs = *(int*)popStackVM()->value;
@@ -266,7 +270,8 @@ interpretResult run(){
                     return(INTERPRET_RUNTIME_ERROR);
                 }
                 Value value;
-                iniValue(&value ,DATA_BOOL);
+                // iniValue(&value ,DATA_BOOL);
+                iniStackValue(&value , DATA_BOOL);
                 switch(topStackVM()->type){
                     case DATA_INT:{
                         int rhs = *(int*)popStackVM()->value;
@@ -289,7 +294,8 @@ interpretResult run(){
                     return (INTERPRET_RUNTIME_ERROR);
                 }
                 Value value;
-                iniValue(&value , DATA_BOOL);
+                // iniValue(&value , DATA_BOOL);
+                iniStackValue(&value , DATA_BOOL);
                 switch(topStackVM()->type){
                     case DATA_INT :{
                         int rhs = *(int*)popStackVM()->value;
@@ -312,7 +318,8 @@ interpretResult run(){
                     return (INTERPRET_RUNTIME_ERROR);
                 }
                 Value value;
-                iniValue(&value , DATA_BOOL);
+                // iniValue(&value , DATA_BOOL);
+                iniStackValue(&value , DATA_BOOL);
                 switch(topStackVM()->type){
                     case DATA_INT :{
                         *(bool*)value.value = *(int*)popStackVM()->value ==*(int*)popStackVM()->value;
@@ -332,7 +339,8 @@ interpretResult run(){
                     return (INTERPRET_RUNTIME_ERROR);
                 }
                 Value value;
-                iniValue(&value , DATA_BOOL);
+                // iniValue(&value , DATA_BOOL);
+                iniStackValue(&value , DATA_BOOL);
                 switch(topStackVM()->type){
                     case DATA_INT:{
                         *(bool*)value.value = *(int*)popStackVM()->value != *(int*)popStackVM()->value;
@@ -352,7 +360,8 @@ interpretResult run(){
             case OP_DECLARE : {
                 dataType type = (dataType)*nextInstruction();
                 Value value;
-                iniValue(&value , type);
+                // iniValue(&value , type);
+                iniStackValue(&value , type);
                 int it = (int)*nextInstruction();
                 writeValueArrayIndex( &vm.vars , &value , it + topFunc()->varsCount);
                 break;
