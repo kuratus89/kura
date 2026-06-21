@@ -4,6 +4,7 @@
 #include "scanner.h"
 #include "token.h"
 #include "vm.h"
+#include "memory.h"
 char* disassembleTokenType(tokenType type){
     switch(type){
         //SINGLE DIGIT SIGNS
@@ -238,14 +239,23 @@ void disassembleFuncToken(tokenFunctions* tf){
     printf("\n<========== DEBUG TOKENS ENDS ==========>\n");  
 }
 
-void disassembleStackVM(VM* vm){
-    printf("Virtual Machine Stack |stack size - %d | VM run count - %d\n" ,vm->stackTop - vm->stack , vm->runCnt);
-    Value* it = vm->stack;
-    while(it!=vm->stackTop){
-        printValue(it);
+// void disassembleStackVM(VM* vm){
+//     printf("Virtual Machine Stack |stack size - %d | VM run count - %d\n" ,vm->stackTop - vm->stack , vm->runCnt);
+//     Value* it = vm;
+//     while(it!=vm->stackTop){
+//         printValue(it);
+//         printf("\n");
+//         it++;
+//     }
+// }
+
+void disassembleRuntimeStack(){
+    printf("Virtual Machine Stack | stack size - %d\n" ,getRuntimeStackSize() );
+    for(int i = getRuntimeStackSize()-1 ; i>=0 ; i--){
+        printValue(getRuntimeStack(i));
         printf("\n");
-        it++;
     }
+    printf("\n");
 }
 
 void disassembleFuncByte(funcByte* func){

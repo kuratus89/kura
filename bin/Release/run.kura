@@ -1,9 +1,20 @@
-int a = 44;
-if(a<9){
-    int b  =5;
-	print b;
+func int sqrtbinary (int x) {
+    int left = 0;
+    int right = x;
+    int ans = 0;
+
+    while (left <= right) {
+        int mid = left + (right - left) / 2;
+
+        if (mid * mid <= x) {
+            ans = mid;
+            left = mid + 1;
+        } else {
+            right = mid - 1;
+        }
+    }
+
+    return ans;
 }
-else {
-int c = 10;
-print c;
-}
+
+print sqrtbinary(25);

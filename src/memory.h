@@ -13,19 +13,31 @@ sizeof(type) * (newCount))
 void* reallocate(void* pointer , size_t oldSize , size_t newSize);
 int* find(int* start , int value , int length , bool isSort);
 
-typedef struct{
-    int stackElementSize;
-    Value* value;
-}valueData;
+
 
 typedef struct {
     void* stack;
     int stackCount;
-    valueData* stackValueData;
-    int stackValueDataCount;
-    int stackValueDataCapacity;
+
+    Value* values;
+    int valuesCapacity;
+
+
+
+    void* runtime;
+    int runtimeCount;
+
+    Value* runtimeValues;
+    int runtimeValuesCount;
+    int runtimeValuesCapacity;
 }Memory;
 
 void iniMemory();
-void* allocateStackMemory(int size);
-void freeStack(int index);
+Value* allocateStackMemoryValueIndex(size_t x , int index);
+Value* getStackMemoryValueIndex(int index);
+void unloadStackMemoryValueIndex(int index);
+void writeStackMemoryValueIndex(Value* value , int index);
+Value* pushNewValueRuntimeStack(size_t size);
+int getRuntimeStackSize();
+Value* popRuntimeStack();
+Value* getRuntimeStack(int offset);

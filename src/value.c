@@ -44,25 +44,29 @@ inline void iniValue(Value* value , dataType type){
     // value->value = allocateStackMemory(value->size);
 }
 
-inline void iniStackValue(Value* value , dataType type){
+inline Value* iniStackMemoryValue(int index , dataType type){
+    int size = dataSize[(int)type];
+    Value* value = allocateStackMemoryValueIndex(size , index);
     value->type = type;
-    value->size = dataSize[(int)type];
-    if(value ->size ==0){
-        value->value = NULL;
-        return;
-    }
-    value->value = allocateStackMemory(value->size);
+    value->size = size;
+    return value;
 }
-inline Value cloneValue(Value* value){
-    Value val;
-    iniValue(&val , value->type);
-    if(!val.size){
-        val.value = NULL;
-        return val;
-    }
-    memcpy(val.value , value->value , val.size);
+
+inline Value* pushRuntimeStackValue(dataType type){
+    int size = dataSize[(int)type];
+    Value* value = pushNewValueRuntimeStack(size);
+    value->type = type;
+    value->size = size;
+    return value;
+}
+inline Value* pushRuntimeStackCloneValue(Value* value){
+    Value* val = pushNewValueRuntimeStack(value->size);
+    memcpy(val->value , value->value , value->size);
+    val->size = value->size;
+    val->type = value->type;
     return val;
 }
+
 void freeValue(Value* value){
     free(value->value);
 }
@@ -138,4 +142,8 @@ dataType getDataType(struct Token* token){
     // will optimize later
     char* dataTypesChar[] = {"int" , "string" , "bool" , "char" , "float" , "vector" , "void"};
     for(int i=0 ; i<7 ; i++)if(strcmp(typeChar , dataTypesChar[i])==0)return((dataType)i);
+}
+
+inline void copyValue(Value* from , Value* to){
+    memcpy(to->value , from->value , to->size);
 }

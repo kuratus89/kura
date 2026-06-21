@@ -12,6 +12,7 @@ void disassembleToken(Token* token);
 void disassembleTokens(Tokens* token);
 char* disassembleTokenType(tokenType type);
 void disassembleFuncToken(tokenFunctions* tf);
-void disassembleStackVM(VM* vm);
+// void disassembleStackVM(VM* vm);
+void disassembleRuntimeStack();
 void disassembleFuncByte(funcByte* func);
 void printValue(Value* value);

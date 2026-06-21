@@ -5,11 +5,18 @@
 #include "scanner.h"
 #include "memory.h"
 #include "debug.h"
+
+
+
+
+
+// note-> 1) fix pushStackVM to new memory system , 2) update new function like getRuntimeStack() , popRuntimeStack()
+
 VM vm;
 bool runVM;
 
 void debugVM(){
-    disassembleStackVM(&vm);
+    disassembleRuntimeStack();
 }
 
 int getInstructionLine(){
@@ -19,9 +26,7 @@ void runTimeError(uint8_t *opc , char* msg){
     printf("RUNTIME ERROR\nOP CODE -%d\nLine - %d\n%s", (int)*opc , getInstructionLine(), msg);
 }
 
-void resetStack(){
-    vm.stackTop = vm.stack;
-}
+
 
 static inline Feeder* pushNewFeed(Chunk* chunk , bool ini, int varsCount){
     if(ini){
@@ -44,32 +49,29 @@ static inline Feeder* pushNewFeed(Chunk* chunk , bool ini, int varsCount){
 
 
 void iniVM(Chunk* chunk , Chunk* func){
-    resetStack();
-    initilizeValueArray(&vm.vars);
+    // initilizeValueArray(&vm.vars);
     iniMemory();
-    vm.vars.capacity =  VAR_STACK_MAX;
-    vm.vars.values = growArray(Value , vm.vars.values , 0 , vm.vars.capacity);
+    // vm.vars.capacity =  VAR_STACK_MAX;
+    // vm.vars.values = growArray(Value , vm.vars.values , 0 , vm.vars.capacity);
     pushNewFeed(chunk , 1 , 0);
     vm.runCnt = 0;  
     vm.varFuncCount = 0; 
     vm.Functions = func;
 }
 
-static inline Value* popStackVM(){
-    return --vm.stackTop;
-}
 
 
-static inline void pushStackVM(Value* value){
-    // *vm.stackTop = value;
-    // vm.stackTop++;
-    Value val = cloneValue(value);
-    *vm.stackTop++ = val;
-}
 
-static inline Value* topStackVM(){
-    return vm.stackTop-1;
-}
+// static inline void pushStackVM(Value* value){
+//     // *vm.stackTop = value;
+//     // vm.stackTop++;
+//     Value val = cloneValue(value);
+//     *vm.stackTop++ = val;
+// }
+
+// static inline Value* topStackVM(){
+//     return vm.stackTop-1;
+// }
 
 static inline Feeder* topFunc(){
     return vm.currentFunc;
@@ -94,20 +96,20 @@ interpretResult run(){
 
         switch(*nextInstruction()){
             case OP_ADD:{
-                if(vm.stackTop - vm.stack <2){
+                if(getRuntimeStackSize()<2){
                     runTimeError(topFunc()->ip , "stack underflow");
                     return (INTERPRET_RUNTIME_ERROR);
                 }
 
-                if((topStackVM())->type != (topStackVM() - 1)->type){
+                if((getRuntimeStack(0))->type != getRuntimeStack(1)->type){
                     runTimeError(topFunc()->ip  , "cannot add values of different data types");
                     return (INTERPRET_RUNTIME_ERROR);
                 }
 
-                switch(topStackVM()->type){
+                switch(getRuntimeStack(0)->type){
                     case (DATA_INT):{
-                        int x = *((int*)popStackVM()->value);
-                        *(int*)(topStackVM()->value) = x + *(int*)topStackVM()->value;
+                        int x = *((int*)popRuntimeStack()->value);
+                        *(int*)(getRuntimeStack(0)->value) = x + *(int*)getRuntimeStack(0)->value;
                         break;
                     }
                 }
@@ -115,18 +117,18 @@ interpretResult run(){
             }
 
             case OP_SUB : {
-                if(vm.stackTop - vm.stack<2){
+                if(getRuntimeStackSize()<2){
                     runTimeError(topFunc()->ip, "stack underflow");
                     return (INTERPRET_RUNTIME_ERROR);
                 }
-                if(topStackVM()->type != (topStackVM()-1)->type){
+                if(getRuntimeStack(0)->type != getRuntimeStack(1)->type){
                     runTimeError(topFunc()->ip, "cannot subtract values of different data types");
                     return ( INTERPRET_RUNTIME_ERROR);
                 }
-                switch(topStackVM()->type){
+                switch(getRuntimeStack(0)->type){
                     case (DATA_INT):{
-                        int x = *(int*)popStackVM()->value;
-                        *(int*)topStackVM()->value= *(int*)topStackVM()->value - x;
+                        int x = *(int*)popRuntimeStack()->value;
+                        *(int*)getRuntimeStack(0)->value= *(int*)getRuntimeStack(0)->value - x;
                         break;
                     }
                 }
@@ -135,73 +137,71 @@ interpretResult run(){
 
             }
             case OP_MUL : {
-                if(vm.stackTop - vm.stack<2){
+                if(getRuntimeStackSize()<2){
                     runTimeError(topFunc()->ip, "stack underflow");
                     return (INTERPRET_RUNTIME_ERROR);
                 }
-                if(topStackVM()->type !=(topStackVM()-1)->type){
+                if(getRuntimeStack(0)->type !=getRuntimeStack(1)->type){
                     runTimeError(vm.currentFunc->ip , "cannot multiply values of diffrent data types");
                     return (INTERPRET_RUNTIME_ERROR);
                 }
-                switch(topStackVM()->type){
+                switch(getRuntimeStack(0)->type){
                     case (DATA_INT):{
-                        int x = *(int*)popStackVM()->value;
-                        *(int*)topStackVM()->value = *(int*)topStackVM()->value * x;
+                        int x = *(int*)popRuntimeStack()->value;
+                        *(int*)getRuntimeStack(0)->value = *(int*)getRuntimeStack(0)->value * x;
                         break;
                     }
                 }
                 break;
             }
             case OP_DIV :{
-                if(vm.stackTop - vm.stack <2){
+                if(getRuntimeStackSize() <2){
                     runTimeError(vm.currentFunc->ip , "stack underflow");
                     return (INTERPRET_RUNTIME_ERROR);
                 }
-                if(topStackVM()->type != (topStackVM()-1)->type){
+                if(getRuntimeStack(0)->type != getRuntimeStack(1)->type){
                     runTimeError(vm.currentFunc->ip ,"cannot divide values of diffrent data types");
                     return (INTERPRET_RUNTIME_ERROR);
                 }
-                switch(topStackVM()->type){
+                switch(getRuntimeStack(0)->type){
                     case (DATA_INT):{
-                        int x = *(int*)popStackVM()->value;
-                        *(int*)topStackVM()->value = *(int*)topStackVM()->value / x;
+                        int x = *(int*)popRuntimeStack()->value;
+                        *(int*)getRuntimeStack(0)->value = *(int*)getRuntimeStack(0)->value / x;
                         break;
                     }
                 }
                 break;
             }
             case OP_MOD:{
-                if(vm.stackTop - vm.stack <2){
+                if(getRuntimeStackSize() <2){
                     runTimeError(vm.currentFunc->ip , "stack underflow");
                     return(INTERPRET_RUNTIME_ERROR);
                 }
-                if(topStackVM()->type !=(topStackVM()-1)->type){
+                if(getRuntimeStack(0)->type !=getRuntimeStack(1)->type){
                     runTimeError(vm.currentFunc->ip , "cannot mod values of diffrent data types");
                     return(INTERPRET_RUNTIME_ERROR);
                 }
-                Value value;
-                switch(topStackVM()->type){
+                switch(getRuntimeStack(0)->type){
                     case(DATA_INT):{
-                        int x = *(int*)popStackVM()->value;
+                        int x = *(int*)popRuntimeStack()->value;
                         // int y = *(int*)popStackVM()->value;
                         // iniStackValue(&value , DATA_INT);
-                        *(int*)topStackVM()->value = *(int*)topStackVM()->value%x;
+                        *(int*)getRuntimeStack(0)->value = *(int*)getRuntimeStack(0)->value%x;
                         // *(int*)value.value = y%x;
                         break;
                     }
                 }
-                pushStackVM(&value);
                 break;
             }
             
             case OP_NEGATE :{
-                if(vm.stackTop==vm.stack){
+                if(getRuntimeStackSize()<1){
                     runTimeError(vm.currentFunc->ip , "stack underflow");
                     return (INTERPRET_RUNTIME_ERROR);
                 }
-                switch(topStackVM()->type){
+                switch(getRuntimeStack(0)->type){
                     case (DATA_INT):{
-                        *(int*)topStackVM()->value = *(int*)topStackVM()->value * (-1);
+                        *(int*)getRuntimeStack(0)->value = *(int*)getRuntimeStack(0)->value * (-1);
                         break;
                     }
                 }
@@ -209,186 +209,197 @@ interpretResult run(){
             }
 
             case OP_GREATER : {
-                if(vm.stackTop - vm.stack <2){
+                if(getRuntimeStackSize() <2){
                     runTimeError(vm.currentFunc->ip , "stack underflow");
                     return (INTERPRET_RUNTIME_ERROR);
                 }
 
-                if(topStackVM()->type !=(topStackVM()-1)->type){
+                if(getRuntimeStack(0)->type !=getRuntimeStack(1)->type){
                     runTimeError(vm.currentFunc->ip , "cannot compare values of diffrent dataType ");
                     return(INTERPRET_RUNTIME_ERROR);
                 }
 
-                Value value;
+                // Value* value = pushRuntimeStackValue(DATA_BOOL );
                 // iniValue(&value , DATA_BOOL);
-                iniStackValue(&value , DATA_BOOL);
+                // iniStackValue(&value , DATA_BOOL);
                 bool ans;
 
-                switch(topStackVM()->type){
+                switch(getRuntimeStack(0)->type){
                     case DATA_INT:{
-                        int rhs = *(int*)popStackVM()->value;
-                        int lhs = *(int*)popStackVM()->value;
+                        int rhs = *(int*)popRuntimeStack()->value;
+                        int lhs = *(int*)popRuntimeStack()->value;
                         ans = rhs<lhs;
                         break;
                     }
                 }
-                *(bool*)value.value = ans;
-                pushStackVM(&value);
+                Value* value = pushRuntimeStackValue(DATA_BOOL);
+                *(bool*)value->value = ans;
+                // pushStackVM(&value);
                 break;
             }
             case OP_LESSER :{
-                if(vm.stackTop - vm.stack <2){
+                if(getRuntimeStackSize() <2){
                     runTimeError(vm.currentFunc->ip , "stack underflow");
                     return(INTERPRET_RUNTIME_ERROR);
                 }
-                if(topStackVM()->type != (topStackVM()-1)->type){
+                if(getRuntimeStack(0)->type != getRuntimeStack(1)->type){
                     runTimeError(vm.currentFunc->ip , "cannot compare values of diffrent dataType");
                     return(INTERPRET_RUNTIME_ERROR);
                 }
-                Value value;
-                // iniValue(&value , DATA_BOOL);
-                iniStackValue(&value , DATA_BOOL);
-                switch(topStackVM()->type){
+                // Value* value = pushRuntimeStackValue(DATA_BOOL);
+                bool ans;
+                switch(getRuntimeStack(0)->type){
                     case DATA_INT :{
-                        int rhs = *(int*)popStackVM()->value;
-                        int lhs = *(int*)popStackVM()->value;
-                        *(bool*)value.value = rhs>lhs;
+                        int rhs = *(int*)popRuntimeStack()->value;
+                        int lhs = *(int*)popRuntimeStack()->value;
+                        // *(bool*)value->value = rhs>lhs;
+                        ans = rhs>lhs;
                         break;
                     }
                 }
-                pushStackVM(&value);
+                Value* value = pushRuntimeStackValue(DATA_BOOL);
+                *(bool*)value->value = ans;
+
                 break;
 
             }
             case OP_GREAT_EQUAL:{
-                if(vm.stackTop - vm.stack<2){
+                if(getRuntimeStackSize()<2){
                     runTimeError(vm.currentFunc->ip , "stack underflow");
                     return(INTERPRET_RUNTIME_ERROR);
                 }
-                if(topStackVM()->type != (topStackVM()-1)->type){
+                if(getRuntimeStack(0)->type != getRuntimeStack(1)->type){
                     runTimeError(vm.currentFunc->ip , "cannot compare values of diffrent dataType");
                     return(INTERPRET_RUNTIME_ERROR);
                 }
-                Value value;
-                // iniValue(&value ,DATA_BOOL);
-                iniStackValue(&value , DATA_BOOL);
-                switch(topStackVM()->type){
+                // Value* value = pushRuntimeStackValue(DATA_BOOL);
+                bool ans;
+                switch(getRuntimeStack(0)->type){
                     case DATA_INT:{
-                        int rhs = *(int*)popStackVM()->value;
-                        int lhs = *(int*)popStackVM()->value;
-                        *(bool*)value.value= lhs <=rhs;
+                        int rhs = *(int*)popRuntimeStack()->value;
+                        int lhs = *(int*)popRuntimeStack()->value;
+                        // *(bool*)value->value= lhs <=rhs;
+                        ans = lhs<=rhs;
                         break;
                     }
                 }
-                
-                pushStackVM(&value);
+                Value* value = pushRuntimeStackValue(DATA_BOOL);
+                *(bool*)value->value = ans;                
                 break;
             }
             case OP_LESS_EQUAL:{
-                if(vm.stackTop - vm.stack <2){
+                if(getRuntimeStackSize() <2){
                     runTimeError(vm.currentFunc->ip , "stack underflow");
                     return(INTERPRET_RUNTIME_ERROR);
                 }
-                if(topStackVM()->type != (topStackVM()-1)->type){
+                if(getRuntimeStack(0)->type != getRuntimeStack(1)->type){
                     runTimeError(vm.currentFunc->ip , "cannot compare values of diffrent dataType");
                     return (INTERPRET_RUNTIME_ERROR);
                 }
-                Value value;
-                // iniValue(&value , DATA_BOOL);
-                iniStackValue(&value , DATA_BOOL);
-                switch(topStackVM()->type){
+                // Value* value = pushRuntimeStackValue(DATA_BOOL);
+                bool ans;
+                switch(getRuntimeStack(0)->type){
                     case DATA_INT :{
-                        int rhs = *(int*)popStackVM()->value;
-                        int lhs = *(int*)popStackVM()->value;
-                        *(bool*)value.value = rhs >= lhs;
+                        int rhs = *(int*)popRuntimeStack()->value;
+                        int lhs = *(int*)popRuntimeStack()->value;
+                        // *(bool*)value->value = rhs >= lhs;
+                        ans = rhs>=lhs;
                         break;
                     }
                 }
-                pushStackVM(&value);
+                Value* value = pushRuntimeStackValue(DATA_BOOL);
+                
+                *(bool*)value->value = ans;
                 break;
             }
 
             case OP_EQUAL_EQUAL:{
-                if(vm.stackTop - vm.stack <2){
+                if(getRuntimeStackSize()<2){
                     runTimeError(vm.currentFunc->ip , "stack underflow");
                     return(INTERPRET_RUNTIME_ERROR);
                 }
-                if(topStackVM()->type != (topStackVM()-1)->type){
+                if(getRuntimeStack(0)->type != getRuntimeStack(1)->type){
                     runTimeError(vm.currentFunc->ip , "cannot compare values of diffrent dataType");
                     return (INTERPRET_RUNTIME_ERROR);
                 }
-                Value value;
-                // iniValue(&value , DATA_BOOL);
-                iniStackValue(&value , DATA_BOOL);
-                switch(topStackVM()->type){
+                // Value* value = pushRuntimeStackValue(DATA_BOOL);
+                bool ans;
+                switch(getRuntimeStack(0)->type){
                     case DATA_INT :{
-                        *(bool*)value.value = *(int*)popStackVM()->value ==*(int*)popStackVM()->value;
+                        // *(bool*)value->value = *(int*)popRuntimeStack()->value ==*(int*)popRuntimeStack()->value;
+                        ans = *(int*)popRuntimeStack()->value == *(int*)popRuntimeStack()->value;
                         break;
                     }
                 }
-                pushStackVM(&value);
+                Value* value = pushRuntimeStackValue(DATA_BOOL);
+                *(bool*)value->value = ans;
                 break;
             }
             case OP_NOT_EQUAL :{
-                if(vm.stackTop - vm.stack <2){
+                if(getRuntimeStackSize() <2){
                     runTimeError(vm.currentFunc->ip , "stack underflow");
                     return ( INTERPRET_RUNTIME_ERROR);
                 }
-                if(topStackVM()->type != (topStackVM()-1)->type){
+                if(getRuntimeStack(0)->type != getRuntimeStack(1)->type){
                     runTimeError(vm.currentFunc->ip , "cannot compare values of diffrent dataType");
                     return (INTERPRET_RUNTIME_ERROR);
                 }
-                Value value;
-                // iniValue(&value , DATA_BOOL);
-                iniStackValue(&value , DATA_BOOL);
-                switch(topStackVM()->type){
+                // Value* value = pushRuntimeStackValue(DATA_BOOL); 
+                bool ans;
+                switch(getRuntimeStack(0)->type){
                     case DATA_INT:{
-                        *(bool*)value.value = *(int*)popStackVM()->value != *(int*)popStackVM()->value;
+                        // *(bool*)value->value = *(int*)popRuntimeStack()->value != *(int*)popRuntimeStack()->value;
+                        ans = *(int*)popRuntimeStack()->value != *(int*)popRuntimeStack()->value;
                         break;
                     }
                 }
-                pushStackVM(&value);
+                Value* value = pushRuntimeStackValue(DATA_BOOL);
+                *(bool*)value->value = ans;
                 break;
             }
 
             case OP_LOAD_CONSTANT :{
                 int it = (int)*nextInstruction();
-                pushStackVM((topFunc()->chunk->constants.values + it));
+                Value* constant = topFunc()->chunk->constants.values+it;
+                pushRuntimeStackCloneValue(constant);
                 break;
             }
 
             case OP_DECLARE : {
                 dataType type = (dataType)*nextInstruction();
-                Value value;
-                // iniValue(&value , type);
-                iniStackValue(&value , type);
                 int it = (int)*nextInstruction();
-                writeValueArrayIndex( &vm.vars , &value , it + topFunc()->varsCount);
+                // iniStackValue(type , it);
+                iniStackMemoryValue(it , type);
                 break;
             }
 
             case OP_LOAD_VAR :{
                 int it = (int)*nextInstruction();
-                pushStackVM((vm.vars.values + it));
+                // pushStackVM(getStackMemoryValueIndex(it));
+                pushRuntimeStackCloneValue(getStackMemoryValueIndex(it));
                 break;
             }
             case OP_LOAD_VAR_LOCAL:{
                 int it = (int)*nextInstruction();
-                pushStackVM(vm.vars.values + it + topFunc()->varsCount);
+                // pushStackVM(vm.vars.values + it + topFunc()->varsCount);
+                // pushStackVM(GetStackMemoryValueIndex(it+ topFunc()->varsCount));
+                pushRuntimeStackCloneValue(getStackMemoryValueIndex(it+ topFunc()->varsCount));
                 break;
             }
 
             case OP_STORE :{
                 int it = (int)*nextInstruction();
-                Value* top = popStackVM();
-                writeValueArrayIndex(&vm.vars , top , it);
+                Value* top = popRuntimeStack();
+                // writeValueArrayIndex(&vm.vars , top , it);
+                writeStackMemoryValueIndex(top , it);
                 break;
             }
 
             case OP_STORE_LOCAL :{
                 int it = (int)* nextInstruction();
-                Value* top = popStackVM();
-                writeValueArrayIndex(&vm.vars , top , it + topFunc()->varsCount);
+                Value* top = popRuntimeStack();
+                // writeValueArrayIndex(&vm.vars , top , it + topFunc()->varsCount);
+                writeStackMemoryValueIndex(top , it+ topFunc()->varsCount);
                 break;
             }
 
@@ -400,19 +411,19 @@ interpretResult run(){
             }
 
             case OP_GOTO_IF_TRUE:{
-                if(vm.stackTop == vm.stack){
+                if(getRuntimeStackSize()<1){
                     runTimeError(vm.currentFunc->ip , "stack underflow");
                     return (INTERPRET_RUNTIME_ERROR);
                 }
                 int it = (int)* nextInstruction();
                 bool todo;
-                switch(topStackVM()->type){
+                switch(getRuntimeStack(0)->type){
                     case DATA_BOOL :{
-                        todo = *(bool*)popStackVM()->value;
+                        todo = *(bool*)popRuntimeStack()->value;
                         break;
                     }
                     case DATA_INT:{
-                        todo = !(*(int*)popStackVM()->value ==0);
+                        todo = !(*(int*)popRuntimeStack() ==0);
                         break;
                     }
                 }
@@ -423,19 +434,19 @@ interpretResult run(){
                 break;
             }
             case OP_GOTO_IF_FALSE:{
-                if(vm.stackTop == vm.stack){
+                if(getRuntimeStackSize()<1){
                     runTimeError(vm.currentFunc->ip , "stack underflow");
                     return(INTERPRET_RUNTIME_ERROR);
                 }
                 int it =(int)*nextInstruction();
                 bool todo;
-                switch(topStackVM()->type){
+                switch(getRuntimeStack(0)->type){
                     case DATA_BOOL :{
-                        todo = !(*(bool*)popStackVM()->value);
+                        todo = !(*(bool*)popRuntimeStack()->value);
                         break;
                     }
                     case DATA_INT:{
-                        todo = (*(int*)popStackVM()->value == 0);
+                        todo = (*(int*)popRuntimeStack()->value == 0);
                         break;
                     }
                 }
@@ -468,14 +479,14 @@ interpretResult run(){
                 break;
             }
             case OP_PRINT:{
-                printValue(popStackVM());
+                printValue(popRuntimeStack());
                 printf("\n");
                 break;
             }
 
         }
         #ifdef DEBUG
-        // debugVM();
+        debugVM();
         #endif
     }
 

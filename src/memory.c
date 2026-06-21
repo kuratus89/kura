@@ -38,63 +38,81 @@ int* find(int* start, int value ,int length , bool isSort){
 
 void iniMemory(){
     memory.stackCount  = 0;
-    memory.stackValueDataCount = 0;
-    memory.stackValueDataCapacity = 0;
-    memory.stackValueData = NULL;
     memory.stack = malloc(MEMORY_STACK_MAX);
+    memory.values=NULL;
+    memory.valuesCapacity =0;
+
+    memory.runtime = malloc(RUNTIME_STACK_MEMORY_MAX);
+    memory.runtimeCount = 0;
+    memory.runtimeValues = NULL;
+    memory.runtimeValuesCount = 0;
+    memory.runtimeValuesCapacity=0;
 }
 
-// void addElementSize(int x){
-//     if(memory.stackElementCount == memory.stackElementCapacity){
-//         int oldCap = memory.stackElementCapacity;
-//         memory.stackElementCapacity = growCapacity(oldCap);
-//         memory.stackElementSize = growArray(int , memory.stackElementSize , oldCap , memory.stackElementCapacity);
-//     }
-//     if(memory.stackElementCount==0)memory.stackElementSize[memory.stackElementCount] = x;
-//     else memory.stackElementSize[memory.stackElementCount] = x + memory.stackElementSize[memory.stackElementCount -1];
-//     memory.stackElementCount++;
-
-// }
-void addValueData(int x ,  int offset){
-    if(memory.stackValueDataCount==memory.stackValueDataCapacity){
-        int oldCap = memory.stackValueDataCapacity;
-        memory.stackValueDataCapacity = growCapacity(oldCap);
-        memory.stackValueData = growArray(valueData , memory.stackValueData , oldCap , memory.stackValueDataCapacity);
+static inline void* allocateStackMemory(size_t x ){
+    if(memory.stackCount+x >= MEMORY_STACK_MAX){
+        printf("memory overflow");
+        exit(19);
     }
-    (memory.stackValueData+memory.stackValueDataCount)->stackElementSize = x+offset;
-    (memory.stackValueData+memory.stackValueDataCount)->value.size = x;
-        
+    memory.stackCount+=x;
+    return(memory.stack+memory.stackCount-x);
 }
-
-int topStackSize(){
-    if(memory.stackElementCount == 0) return -1;
-    if(memory.stackElementCount==1)return memory.stackElementSize[0];
-    else return memory.stackElementSize[memory.stackElementCount-1 ] - memory.stackElementSize[memory.stackElementCount - 2];
-}
-
-
-void* allocateStackMemory(int size){
-    addElementSize(size);
-    memory.stackCount+=size;
-    if(memory.stackCount>= MEMORY_STACK_MAX){
-        printf("memory stack overFlow");
-        exit(909);
+static inline void* allocateRuntimeMemory(size_t size){
+    if(memory.runtimeCount+size>= RUNTIME_STACK_MEMORY_MAX){
+        printf("Runtime stack overflow");
+        exit(29);
     }
-    return memory.stack+ memory.stackCount - size;
+    memory.runtimeCount+=size;
+    return(memory.runtime + memory.runtimeCount - size);
 }
 
-void freeStack(int index){
-    int it;
-    if(index==0)it =0;
-    else it = memory.stackElementSize[index-1];
-    memory.stackCount = it;
-    memory.stackElementCount = index;
+
+
+inline Value* allocateStackMemoryValueIndex(size_t x , int index){
+    if(index>= memory.valuesCapacity){
+        int oldCap = memory.valuesCapacity;
+        memory.valuesCapacity = growCapacity(index);
+        memory.values = growArray(Value , memory.values , oldCap , memory.valuesCapacity);
+    }
+    memory.values[index].value = allocateStackMemory(x);
+    return memory.values+index;
 }
 
-void* getStackValue(int index){
-    int it;
-    if(index==0)it = 0;
-    else it = memory.stackElementSize[index-1];
-    return memory.stack+it;
+inline Value* getStackMemoryValueIndex(int index){
+    return memory.values+index;
 }
 
+inline void writeStackMemoryValueIndex(Value* value ,  int index){
+    if(index>=memory.valuesCapacity)return;
+    Value* x = getStackMemoryValueIndex(index);
+    copyValue(value , x);
+}
+
+inline void unloadStackMemoryValueIndex(int index){
+    memory.stackCount = (memory.values+index)->value - memory.stack;
+}
+
+inline Value* pushNewValueRuntimeStack(size_t size){
+    if(memory.runtimeValuesCount>= memory.runtimeValuesCapacity){
+        int oldCap = memory.runtimeValuesCapacity;
+        memory.runtimeValuesCapacity = growCapacity(oldCap);
+        memory.runtimeValues = growArray(Value , memory.runtimeValues , oldCap , memory.runtimeValuesCapacity);
+    }
+
+    memory.runtimeValues[memory.runtimeValuesCount].value = allocateRuntimeMemory(size);
+    memory.runtimeValuesCount++;
+    return memory.runtimeValues+ memory.runtimeValuesCount-1;
+}
+
+inline int getRuntimeStackSize(){
+    return memory.runtimeValuesCount;
+}
+
+inline Value* popRuntimeStack(){
+    memory.runtimeCount = memory.runtimeValues[memory.runtimeValuesCount-1].value - memory.runtime;
+    memory.runtimeValuesCount--;
+    return memory.runtimeValues + memory.runtimeValuesCount;
+}
+inline Value* getRuntimeStack(int offset){
+    return memory.runtimeValues + memory.runtimeValuesCount -1 - offset;
+}

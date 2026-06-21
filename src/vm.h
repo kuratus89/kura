@@ -21,13 +21,12 @@ typedef struct{
 
 typedef struct{
     Feeder feeds[FEED_MAX];
-    Value stack[STACK_MAX];
+    // Value stack[STACK_MAX];
     Feeder* currentFunc;
-    Value* stackTop;
+    // Value* stackTop;
     int runCnt;
     int varFuncCount;
     Chunk* Functions;
-    valueArray vars;
 }VM;
 
 
