@@ -47,6 +47,9 @@ void iniMemory(){
     memory.runtimeValues = NULL;
     memory.runtimeValuesCount = 0;
     memory.runtimeValuesCapacity=0;
+
+    memory.heaps = NULL;
+    memory.heapsCapacity=0;
 }
 
 static inline void* allocateStackMemory(size_t x ){
@@ -115,4 +118,46 @@ inline Value* popRuntimeStack(){
 }
 inline Value* getRuntimeStack(int offset){
     return memory.runtimeValues + memory.runtimeValuesCount -1 - offset;
+}
+
+
+
+inline iniHeapBlock(heapBlock* heap ,size_t size){
+
+}
+
+inline int addNewHeapBlock(size_t size){
+    if(memory.heapsCount==memory.heapsCapacity){
+        int oldCap = memory.heapsCapacity;
+        memory.heapsCapacity =growCapacity(oldCap);
+        memory.heaps = growArray(heapBlock , memory.heaps , oldCap , memory.heapsCapacity);
+    }
+    iniHeapBlock(memory.heaps+ memory.heapsCount ,size);
+    memory.heapsCount++;
+    return memory.heapsCount-1;
+}
+
+
+inline int findHeapBlock(size_t size){
+    int low =0;
+    int high = memory.heapsCount;
+    int mid;
+    while(low<high){
+        mid = (low+high)/2;
+        if((memory.heaps+mid)->maxInterval<size)low = mid+1;
+        else high = mid;
+    }
+    if((memory.heaps+mid)->maxInterval<size)return addNewHeapBlock(size);
+    return mid;
+}
+
+void pushInterval(heapIntervals* interval){
+    
+}
+
+inline allocateHeapMemory(size_t size){
+    int it = findHeapBlock(size);
+    heapBlock* heap =memory.heaps+it;
+    
+
 }

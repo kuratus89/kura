@@ -18,6 +18,7 @@ add_executable(Kura
     src/token.c
     src/compiler.c
     src/value.c
+    src/datastruct.c
 )
 
 target_compile_definitions(Kura PRIVATE

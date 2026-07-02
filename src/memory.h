@@ -15,7 +15,26 @@ int* find(int* start , int value , int length , bool isSort);
 
 
 
+typedef struct{
+    int size;
+    int start;
+}heapIntervals;
+
+
+
+typedef struct{
+    void* memory;
+    int maxInterval;
+
+    heapIntervals* intervals;
+    int* index;
+    int intervalsCount;
+    int intervalCapacity;
+}heapBlock;
+
+
 typedef struct {
+    //stack memory
     void* stack;
     int stackCount;
 
@@ -23,13 +42,19 @@ typedef struct {
     int valuesCapacity;
 
 
-
+    // runtime stack
     void* runtime;
     int runtimeCount;
 
     Value* runtimeValues;
     int runtimeValuesCount;
     int runtimeValuesCapacity;
+
+
+    // heap memory
+    heapBlock* heaps;
+    int heapsCount;
+    int heapsCapacity;
 }Memory;
 
 void iniMemory();

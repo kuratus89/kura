@@ -8,3 +8,4 @@
 
 #define MEMORY_STACK_MAX 256
 #define RUNTIME_STACK_MEMORY_MAX 256
+#define NIL -1
