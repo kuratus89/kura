@@ -447,40 +447,27 @@ void colorBlack(rbt* nodes , int node){
         return;
     }
 
-    if(current->isLeft){
-        if(isLeftBlack){
-            // if(!parent->color){
-            //     sibling->color =0;
-            //     parent->color =1;
-            // }
-            swapColor(parent , sibling);
-            (nodes->nodes + rightChild)->color =0;
-            moveLeft(nodes , parent - nodes->nodes);
+    if(current->isLeft){       
+        if(isRightBlack){
+            swapColor(sibling , nodes->nodes + leftChild);
+            moveRight(nodes , parent - nodes->nodes);
+            rightChild = leftChild;
         }
-        else {
-
-        }
+        swapColor(parent , sibling);
+        (nodes->nodes + rightChild)->color =0;
+        moveLeft(nodes , parent - nodes->nodes);
+        return;
     }
 
-    // bool farChild, nearChild;
-
-    // if(current->isLeft){
-    //     farChild = isRightBlack;
-    //     nearChild = isLeftBlack;
-    // }
-    // else {
-    //     farChild = isLeftBlack;
-    //     nearChild = isRightBlack;
-    // }
-
-    // if(nearChild){
-
-    // }
-    // if(farChild){
-
-    // }
-
-
+    if(isLeftBlack){
+        swapColor(sibling , nodes->nodes + rightChild);
+        moveLeft(nodes , parent - nodes->nodes);
+        leftChild = rightChild;
+    }
+    swapColor(parent ,sibling);
+    (nodes->nodes + leftChild)->color =0;
+    moveRight(nodes , parent - nodes->nodes);
+    return;
 }
 
 
