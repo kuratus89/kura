@@ -14,18 +14,18 @@ typedef struct{
     int capacity;
 }rbtNode;
 
-
-
 typedef struct{
     rbtNode* nodes;
     int root;
     int count;
     int capacity;
 
-    int* hashKey;
-    int hashCapacity;
+    int* indexKey;
+    int indexCapacity;
 
     int* recycleNodes;
     int recycleCount;
     int recycleCapacity;
 }rbt;
+
+rbtNode* getRootRbtNode(rbt* nodes);

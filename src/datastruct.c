@@ -3,13 +3,13 @@
 #include "memory.h"
 
 void iniRbt(rbt* nodes){
-    nodes->nodes = NIL;
+    nodes->nodes = NULL;
     nodes->count=0;
     nodes->capacity=0;
     nodes->root=NIL;
 
-    nodes->hashKey = NULL;
-    nodes->hashCapacity=0;
+    nodes->indexKey = NULL;
+    nodes->indexCapacity =0;
 
     nodes->recycleNodes = NULL;
     nodes->recycleCount=0;
@@ -38,13 +38,13 @@ void pushRbtValue(int value , rbtNode* node){
     *(node->values +node->count) = value;
     node->count++;
 }
-void pushHash(int hash , int value , rbt* nodes){
-    if(value>=nodes->hashCapacity){
-        int oldCap = nodes->hashCapacity;
-        nodes->hashCapacity = growCapacity(value);
-        nodes->hashKey = growArray(int , nodes->hashKey , oldCap , nodes->hashCapacity);
+void pushIndex(int index , int value , rbt* nodes){
+    if(value>=nodes->indexCapacity){
+        int oldCap = nodes->indexCapacity;
+        nodes->indexCapacity = growCapacity(value);
+        nodes->indexKey = growArray(int , nodes->indexKey , oldCap , nodes->indexCapacity);
     }
-    *(nodes->hashKey + value) = hash;
+    *(nodes->indexKey + value)= index;
 }
 
 void pushRecycleNode(rbt* nodes , int node){
@@ -95,6 +95,7 @@ void rotateRR(rbt* nodes , int node){
     parent->parent = grandParent->parent;
     grandParent->parent = child->parent;
     parent->isLeft= grandParent->isLeft;
+    grandParent->isLeft = 1;
 
     if(parent->leftChild!=NIL){
         (nodes->nodes + parent->leftChild)->isLeft=0;
@@ -116,6 +117,8 @@ void rotateLR(rbt* nodes , int node){
     grandParent->leftChild = child - nodes->nodes;
     child->isLeft=1;
     parent->parent = child - nodes->nodes;
+    child->parent = grandParent - nodes->nodes;
+    child->leftChild = parent - nodes->nodes;
     rotateLL(nodes , parent - nodes->nodes);
 }
 void rotateRL(rbt* nodes , int node){
@@ -130,8 +133,10 @@ void rotateRL(rbt* nodes , int node){
     parent->leftChild = child->rightChild;
     grandParent->rightChild = child - nodes->nodes;
     child->isLeft = 0;
+    child->parent = grandParent - nodes->nodes;
     parent->parent = child - nodes->nodes;
-    rotateRR(nodes , child - nodes->nodes);
+    child->rightChild = parent - nodes->nodes;
+    rotateRR(nodes , parent - nodes->nodes);
 }
 
 void colorRed(rbt* nodes , int node ){
@@ -206,16 +211,11 @@ void colorRed(rbt* nodes , int node ){
     
 }
 
-void pushNode(int value , int key , rbt* nodes){
+void pushRbtNode(int value , int key , rbt* nodes){
     if(nodes->count==nodes->capacity){
         int oldCap = nodes->capacity;
         nodes->capacity = growCapacity(oldCap);
         nodes->nodes = growArray(rbtNode , nodes->nodes , oldCap , nodes->capacity);
-    }
-    if(value >= nodes->hashCapacity){
-        int oldCap = nodes->hashCapacity;
-        nodes->hashCapacity = growCapacity(oldCap);
-        nodes->hashKey = growArray(int , nodes->hashKey , oldCap , nodes->hashCapacity);
     }
 
     
@@ -232,7 +232,7 @@ void pushNode(int value , int key , rbt* nodes){
         }
         (nodes->nodes+it)->key = key;
         pushRbtValue(value , nodes->nodes+ it);
-        pushHash(it , value , nodes);
+        pushIndex(it , value , nodes);
         (nodes->nodes +it)->leftChild = NIL;
         (nodes->nodes +it)-> rightChild = NIL;
         nodes->root = it;
@@ -269,7 +269,7 @@ void pushNode(int value , int key , rbt* nodes){
 
     if(multi){
         pushRbtValue(value , current);
-        pushHash(current - nodes->nodes , value , nodes);
+        pushIndex(current - nodes->nodes , value , nodes);
         return;
     }
 
@@ -285,6 +285,7 @@ void pushNode(int value , int key , rbt* nodes){
     }
     (nodes->nodes+it)->key = key;
     pushRbtValue(value , nodes->nodes+ it);
+    pushIndex(it , value , nodes);
     (nodes->nodes +it)->leftChild = NIL;
     (nodes->nodes +it)-> rightChild = NIL;
     (nodes->nodes +it)->parent = current - nodes->nodes;
@@ -302,32 +303,64 @@ void pushNode(int value , int key , rbt* nodes){
     colorRed(nodes , it);
 }
 
-void swap(rbt*nodes , int node1 , int node2){// do not swap color
+void swap(rbt*nodes , int node1 , int node2){// does not swap color
     rbtNode* x = nodes->nodes + node1;
     rbtNode* y = nodes->nodes + node2;
 
-    if(nodes->root!=node1){
-        if(x->isLeft)(nodes->nodes + x->parent)->leftChild = node2;
-        else (nodes->nodes + x->parent)->rightChild = node2;
+    int xParent = x->parent;
+    int xLeft = x->leftChild;
+    int xRight = x->rightChild;
+    bool xIsLeft = x->isLeft;
+
+    if(xRight == node2){
+        if(nodes->root != node1){
+            if(xIsLeft)(nodes->nodes + xParent)->leftChild = node2;
+            else (nodes->nodes + xParent)->rightChild = node2;
+        }
+
+        y->parent = xParent;
+        y->isLeft = xIsLeft;
+        y->leftChild = xLeft;
+        if(xLeft != NIL)(nodes->nodes + xLeft)->parent = node2;
+        
+        int yOldRight = y->rightChild;
+        x->parent = node2;
+        x->isLeft = 0;
+        x->leftChild = NIL;
+        x->rightChild = yOldRight;
+        if(yOldRight != NIL)(nodes->nodes + yOldRight)->parent = node1;
     }
-    
-    if(nodes->root!=node2){
-        if(y->isLeft)(nodes->nodes + y->parent)->leftChild = node1;
-        else (nodes->nodes + y->parent)->rightChild = node1;
+
+    else {
+        int yParent = y->parent;
+        int yLeft = y->leftChild ;
+        int yRight = y->rightChild;
+        bool yIsLeft = y->isLeft;
+
+        if(nodes->root != node1){
+            if(xIsLeft)(nodes->nodes + xParent)->leftChild = node2;
+            else (nodes->nodes + xParent)->rightChild = node2;
+        }
+        if(nodes->root != node2){
+            if(yIsLeft)(nodes->nodes + yParent)->leftChild = node1;
+            else (nodes->nodes + yParent)->rightChild = node1;
+        }
+
+        if(xLeft != NIL)(nodes->nodes + xLeft)->parent = node2;
+        if(xRight != NIL)(nodes->nodes + xRight)->parent = node2;
+        if(yLeft != NIL)(nodes->nodes + yLeft)->parent = node1;
+        if(yRight != NIL)(nodes->nodes + yRight)->parent = node1;
+
+        x->parent = yParent;
+        x->leftChild = yLeft;
+        x->rightChild = yRight;
+        x->isLeft = yIsLeft;
+        
+        y->parent = xParent;
+        y->leftChild = xLeft;
+        y->rightChild = xRight;
+        y->isLeft = xIsLeft;
     }
-
-    if(x->leftChild != NIL)(nodes->nodes + x->leftChild)->parent = node2;
-    if(x->rightChild != NIL)(nodes->nodes + x->rightChild)->parent = node2;
-
-    if(y->leftChild !=NIL)(nodes->nodes + y->leftChild)->parent = node1;
-    if(y->rightChild !=NIL)(nodes->nodes + y->rightChild)->parent = node2;
-
-    int parent = x->parent;
-    int leftChild = x->leftChild;
-    int rightChild = x->rightChild;
-    x->parent = y->parent;
-    x->leftChild = y->leftChild;
-    x->rightChild = y->rightChild;
 
     if(nodes->root == node1)nodes->root = node2;
     else if(nodes->root == node2)nodes->root = node1;
@@ -348,7 +381,7 @@ void forceDelete(rbt* nodes , int node){
 void moveLeft(rbt* nodes , int node){
     rbtNode* parent = nodes->nodes + node;
     rbtNode* child = nodes->nodes + parent->rightChild;
-
+    int oldGrandParent = parent->parent;
     if(nodes->root == node)nodes->root = parent->rightChild;
     else {
         if(parent->isLeft)(nodes->nodes + parent->parent)->leftChild = parent->rightChild;
@@ -361,15 +394,17 @@ void moveLeft(rbt* nodes , int node){
     }
     parent->rightChild = child->leftChild;
     child->isLeft = parent->isLeft;
+    child->parent = oldGrandParent;
     parent->parent = child - nodes->nodes;
+    parent->isLeft =1;
     child->leftChild = node;
 }
 
 void moveRight(rbt* nodes , int node){
     rbtNode* parent = nodes->nodes + node;
     rbtNode* child = nodes->nodes + parent->leftChild;
-
-    if(nodes->root = node)nodes->root = parent->leftChild;
+    int oldGrandParent = parent->parent;
+    if(nodes->root == node)nodes->root = parent->leftChild;
     else {
         if(parent->isLeft)(nodes->nodes + parent->parent)->leftChild = parent->leftChild;
         else (nodes->nodes + parent->parent)->rightChild = parent->leftChild;
@@ -382,8 +417,10 @@ void moveRight(rbt* nodes , int node){
 
     parent->leftChild = child->rightChild;
     child->isLeft = parent->isLeft;
+    child->parent = oldGrandParent;
     parent->parent = child - nodes->nodes;
-    child->leftChild = node;
+    parent->isLeft =0;
+    child->rightChild = node;
 }
 
 void swapColor(rbtNode* x , rbtNode* y){
@@ -403,7 +440,7 @@ void colorBlack(rbt* nodes , int node){
         return;
     }
 
-    if(nodes->root = node)return;
+    if(nodes->root == node)return;
 
     rbtNode* current = nodes->nodes + node;
     rbtNode* parent = nodes->nodes + current->parent;
@@ -450,8 +487,9 @@ void colorBlack(rbt* nodes , int node){
     if(current->isLeft){       
         if(isRightBlack){
             swapColor(sibling , nodes->nodes + leftChild);
-            moveRight(nodes , parent - nodes->nodes);
-            rightChild = leftChild;
+            moveRight(nodes , sibling - nodes->nodes);
+            sibling = nodes->nodes + leftChild;
+            rightChild = sibling->rightChild;
         }
         swapColor(parent , sibling);
         (nodes->nodes + rightChild)->color =0;
@@ -461,8 +499,9 @@ void colorBlack(rbt* nodes , int node){
 
     if(isLeftBlack){
         swapColor(sibling , nodes->nodes + rightChild);
-        moveLeft(nodes , parent - nodes->nodes);
-        leftChild = rightChild;
+        moveLeft(nodes , sibling - nodes->nodes);
+        sibling = nodes->nodes + rightChild;
+        leftChild = sibling->leftChild;
     }
     swapColor(parent ,sibling);
     (nodes->nodes + leftChild)->color =0;
@@ -472,7 +511,8 @@ void colorBlack(rbt* nodes , int node){
 
 
 int nextNode(rbt* nodes , int node){
-    while((nodes->nodes + node)->rightChild != NIL)node = (nodes->nodes + node)->rightChild;
+    node = (nodes->nodes + node)->rightChild;
+    while((nodes->nodes + node)->leftChild != NIL)node = (nodes->nodes + node)->leftChild;
     return node;
 }
 
@@ -480,7 +520,9 @@ int nextNode(rbt* nodes , int node){
 void deleteNode(rbt* nodes , int nodeIt){
     rbtNode* node = nodes->nodes + nodeIt;
     if((node->leftChild != NIL)&&(node->rightChild != NIL)){
-         swap(nodes , node , nextNode(nodes , nodeIt));
+        int nextnode = nextNode(nodes , nodeIt);
+         swap(nodes , nodeIt , nextnode);
+         swapColor(node , nodes->nodes + nextnode);
     }
     
     if(node->leftChild != NIL){
@@ -516,6 +558,10 @@ void deleteNode(rbt* nodes , int nodeIt){
         return;
     }
 
-    doubleBlack(nodes , nodeIt);
+    colorBlack(nodes , nodeIt);
     forceDelete(nodes , nodeIt);    
+}
+
+inline rbtNode* getRootRbtNode(rbt* nodes){
+    return (nodes->nodes + nodes->root);
 }
