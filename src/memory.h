@@ -15,7 +15,7 @@ void* reallocate(void* pointer , size_t oldSize , size_t newSize);
 int* find(int* start , int value , int length , bool isSort);
 
 #define headerSize 4*sizeof(int)
-#define footerSize sizeof(int);
+#define footerSize sizeof(int)
 
 
 typedef struct{

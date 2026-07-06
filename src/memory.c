@@ -130,7 +130,7 @@ heapInterval* pushInterval(heapBlock* heap , int size , int start){
     int ip;
     if(heap->recycleIntervalCount){
         heap->recycleIntervalCount--;
-        ip = heap->recycleInterval + heap->recycleIntervalCount;
+        ip = *(heap->recycleInterval + heap->recycleIntervalCount);
     }
     else {
         ip = heap->intervalsCount;
@@ -189,10 +189,10 @@ void* allocateHeapMemory(size_t size){
 
     // if(intervalSize>totalSize)pushInterval(heap , intervalSize - totalSize , intervalStart + totalSize+1);
 
-    *((uint8_t*)heap->memory + intervalStart) = -1; // link to previous free memory
-    *((uint8_t*)heap->memory + intervalStart + sizeof(int)) = heap - memory.heaps; //heap block address
-    *((uint8_t*)heap->memory + intervalStart + 2*sizeof(int)) = intervalStart; // memory address
-    *((uint8_t*)heap->memory + intervalStart + 3*sizeof(int)) = totalSize; // memory size
+    *(int*)((uint8_t*)heap->memory + intervalStart) = -1; // link to previous free memory
+    *(int*)(int*)((uint8_t*)heap->memory + intervalStart + sizeof(int)) = heap - memory.heaps; //heap block address
+    *(int*)((uint8_t*)heap->memory + intervalStart + 2*sizeof(int)) = intervalStart; // memory address
+    *(int*)((uint8_t*)heap->memory + intervalStart + 3*sizeof(int)) = totalSize; // memory size
     
     // *((uint8_t*)heap->memory + intervalStart + headerSize + size +1) = (int)-1; //link to next free memory
 
@@ -201,14 +201,14 @@ void* allocateHeapMemory(size_t size){
 
     if(intervalSize>totalSize){
         heapInterval* nextMemory = pushInterval(heap , intervalSize - totalSize , intervalStart + totalSize +1);
-        *((uint8_t*)heap->memory + intervalStart + headerSize +size +1 )= nextMemory - heap->intervals;
+        *(int*)((uint8_t*)heap->memory + intervalStart + headerSize +size +1 )= nextMemory - heap->intervals;
     }
-    else *((uint8_t*)heap->memory + intervalStart + headerSize + size +1) = -1;
+    else *(int*)((uint8_t*)heap->memory + intervalStart + headerSize + size +1) = -1;
 
     return (uint8_t*)heap->memory + intervalStart + headerSize;
 }
 
 void freeHeapMemory(void* mem){
-    
+
 }
 

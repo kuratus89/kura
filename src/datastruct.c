@@ -566,10 +566,12 @@ void deleteNode(rbt* nodes , int nodeIt){
 }
 
 inline rbtNode* getRootRbtNode(rbt* nodes){
+    if(nodes->root == NULL)return NULL;
     return (nodes->nodes + nodes->root);
 }
 
 inline rbtNode* lowerBoundRbt(rbt* nodes , int key){
+    if(nodes->root == NULL)return NULL;
     rbtNode* node = getRootRbtNode(nodes);
     while(1){
         if(key>node->key){
@@ -596,7 +598,7 @@ inline rbtNode* lowerBoundRbt(rbt* nodes , int key){
 // }
 
 inline int getTopNodeValue(rbtNode* node){
-    return node->values + node->count - 1;
+    return *(node->values + node->count - 1);
 }
 
 void pushRecycleValue(rbtNode* node , int value){
@@ -617,6 +619,6 @@ void deleteRbtNodeValueExpand(rbt* nodes , int nodeIt , int value){
 }
 
 inline void deleteRbtNodeValue(rbt* nodes , int value){
-    indexRbtKeys* key = nodes->indexKey;
+    indexRbtKeys* key = nodes->indexKey + value;
     deleteRbtNodeValueExpand(nodes , key->nodeIndex , key->valueIndex);
 }
