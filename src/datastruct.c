@@ -36,15 +36,18 @@ void pushRbtValue(int value , rbtNode* node){
         node->values = growArray(int , node->values , oldCap , node->capacity);
     }
     *(node->values +node->count) = value;
+    node->size++;
     node->count++;
 }
-void pushIndex(int index , int value , rbt* nodes){
+void pushIndex(int index , int value , int valueIndex, rbt* nodes){
     if(value>=nodes->indexCapacity){
         int oldCap = nodes->indexCapacity;
         nodes->indexCapacity = growCapacity(value);
         nodes->indexKey = growArray(int , nodes->indexKey , oldCap , nodes->indexCapacity);
     }
-    *(nodes->indexKey + value)= index;
+    // *(nodes->indexKey + value)= index;
+    (nodes->indexKey + value)->nodeIndex = index;
+    (nodes->indexKey + value)->valueIndex = valueIndex;
 }
 
 void pushRecycleNode(rbt* nodes , int node){
@@ -232,7 +235,7 @@ void pushRbtNode(int value , int key , rbt* nodes){
         }
         (nodes->nodes+it)->key = key;
         pushRbtValue(value , nodes->nodes+ it);
-        pushIndex(it , value , nodes);
+        pushIndex(it , value , 0 , nodes);
         (nodes->nodes +it)->leftChild = NIL;
         (nodes->nodes +it)-> rightChild = NIL;
         nodes->root = it;
@@ -269,8 +272,7 @@ void pushRbtNode(int value , int key , rbt* nodes){
 
     if(multi){
         pushRbtValue(value , current);
-        pushIndex(current - nodes->nodes , value , nodes);
-        return;
+        pushIndex(current - nodes->nodes , value , current->count -1 , nodes);
     }
 
     int it;
@@ -285,7 +287,7 @@ void pushRbtNode(int value , int key , rbt* nodes){
     }
     (nodes->nodes+it)->key = key;
     pushRbtValue(value , nodes->nodes+ it);
-    pushIndex(it , value , nodes);
+    pushIndex(it , value , current->count -1 , nodes);
     (nodes->nodes +it)->leftChild = NIL;
     (nodes->nodes +it)-> rightChild = NIL;
     (nodes->nodes +it)->parent = current - nodes->nodes;
@@ -301,6 +303,7 @@ void pushRbtNode(int value , int key , rbt* nodes){
     }
 
     colorRed(nodes , it);
+    return 0;
 }
 
 void swap(rbt*nodes , int node1 , int node2){// does not swap color
@@ -564,4 +567,56 @@ void deleteNode(rbt* nodes , int nodeIt){
 
 inline rbtNode* getRootRbtNode(rbt* nodes){
     return (nodes->nodes + nodes->root);
+}
+
+inline rbtNode* lowerBoundRbt(rbt* nodes , int key){
+    rbtNode* node = getRootRbtNode(nodes);
+    while(1){
+        if(key>node->key){
+            if(node->rightChild==NIL)return NULL;
+            node = nodes->nodes + node->rightChild;
+            continue;
+        }
+        if(key<node->key){
+            if(node->leftChild==NIL)return node;
+            if((nodes->nodes + node->leftChild)->key < key)return node;
+            node = nodes->nodes + node->leftChild;
+            continue;
+        }
+        if(key == node->key)return node;        
+    }
+    return NULL; //ahh , jsut in case >>_<<
+}
+
+// inline int popTopNodeValue(rbt* nodes , rbtNode* node){
+//     node->count--;
+//     int val= node->values + node->count;
+//     if(node->count==0)deleteNode(nodes ,node - nodes->nodes);
+//     return val;
+// }
+
+inline int getTopNodeValue(rbtNode* node){
+    return node->values + node->count - 1;
+}
+
+void pushRecycleValue(rbtNode* node , int value){
+    if(node->recycleValuesCount == node->recycleValuesCapacity){
+        int oldCap = node->recycleValuesCapacity;
+        node->recycleValuesCapacity = growCapacity(oldCap);
+        node->recycleValues = growArray(int , node->recycleValues , oldCap , node->recycleValuesCapacity);
+    }
+    *(node->recycleValues+ node->recycleValuesCount) =value;
+    node->recycleValuesCount++;
+}
+
+void deleteRbtNodeValueExpand(rbt* nodes , int nodeIt , int value){
+    rbtNode* node = nodes->nodes + nodeIt;
+    node->size--;
+    if(node->size)pushRecycleValue(node , value);
+    else deleteNode(nodes , node - nodes->nodes);
+}
+
+inline void deleteRbtNodeValue(rbt* nodes , int value){
+    indexRbtKeys* key = nodes->indexKey;
+    deleteRbtNodeValueExpand(nodes , key->nodeIndex , key->valueIndex);
 }

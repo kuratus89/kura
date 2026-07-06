@@ -1,5 +1,6 @@
 #include "common.h"
 #include "memory.h"
+#include "datastruct.h"
 Memory memory;
 int growCapacity(int oldCap){
     if(oldCap==0)return 8;
@@ -120,7 +121,26 @@ inline Value* getRuntimeStack(int offset){
     return memory.runtimeValues + memory.runtimeValuesCount -1 - offset;
 }
 
-
+heapInterval* pushInterval(heapBlock* heap , int size , int start){
+    if(heap->intervalsCount==heap->intervalsCapacity){
+        int oldCap = heap->intervalsCapacity;
+        heap->intervalsCapacity = growCapacity(oldCap * 2);
+        heap->intervals = growArray(heapInterval , heap->intervals , oldCap , heap->intervalsCapacity);
+    }
+    int ip;
+    if(heap->recycleIntervalCount){
+        heap->recycleIntervalCount--;
+        ip = heap->recycleInterval + heap->recycleIntervalCount;
+    }
+    else {
+        ip = heap->intervalsCount;
+        heap->intervalsCount++;
+    }
+    pushRbtNode(ip ,size , &heap->intervalRbt);
+    (heap->intervals + ip)->size = size;
+    (heap->intervals + ip)->start = start;
+    return heap->intervals + ip;
+}
 
 inline iniHeapBlock(heapBlock* heap ,size_t size){
 
@@ -133,31 +153,62 @@ inline int addNewHeapBlock(size_t size){
         memory.heaps = growArray(heapBlock , memory.heaps , oldCap , memory.heapsCapacity);
     }
     iniHeapBlock(memory.heaps+ memory.heapsCount ,size);
+    pushRbtNode(memory.heapsCount , size , &memory.heapRbt);
     memory.heapsCount++;
     return memory.heapsCount-1;
 }
 
 
 inline int findHeapBlock(size_t size){
-    int low =0;
-    int high = memory.heapsCount;
-    int mid;
-    while(low<high){
-        mid = (low+high)/2;
-        if((memory.heaps+mid)->maxInterval<size)low = mid+1;
-        else high = mid;
+    rbtNode* node = lowerBoundRbt(&memory.heapRbt , size);
+    if(node == NULL)return addNewHeapBlock(size);
+    else return getTopNodeValue(node);
+}
+
+void deleteInterval(heapBlock* heap , int interval){
+    if(heap->recycleIntervalCount==heap->recycleIntervalCapacity){
+        int oldCap = heap->recycleIntervalCapacity;
+        heap->recycleIntervalCapacity = growCapacity(oldCap);
+        heap->recycleInterval = growArray(int , heap->recycleInterval , oldCap , heap->recycleIntervalCapacity);
     }
-    if((memory.heaps+mid)->maxInterval<size)return addNewHeapBlock(size);
-    return mid;
+    *(heap->recycleInterval + heap->recycleIntervalCount) = interval;
+    heap->recycleIntervalCount++;
+    deleteRbtNodeValue(&heap->intervalRbt , interval);
 }
 
-void pushInterval(heapIntervals* interval){
+
+void* allocateHeapMemory(size_t size){
+    int totalSize = size + headerSize + footerSize;
+    heapBlock* heap =memory.heaps+findHeapBlock(totalSize);
+    rbtNode* node = lowerBoundRbt(&heap->intervalRbt , totalSize);
+    int value = getTopNodeValue(node);
+    heapInterval* interval = heap->intervals + value;
+    int intervalStart = interval->start;
+    int intervalSize = interval->size;
+    deleteInterval(heap , interval - heap->intervals);
+
+    // if(intervalSize>totalSize)pushInterval(heap , intervalSize - totalSize , intervalStart + totalSize+1);
+
+    *((uint8_t*)heap->memory + intervalStart) = -1; // link to previous free memory
+    *((uint8_t*)heap->memory + intervalStart + sizeof(int)) = heap - memory.heaps; //heap block address
+    *((uint8_t*)heap->memory + intervalStart + 2*sizeof(int)) = intervalStart; // memory address
+    *((uint8_t*)heap->memory + intervalStart + 3*sizeof(int)) = totalSize; // memory size
+    
+    // *((uint8_t*)heap->memory + intervalStart + headerSize + size +1) = (int)-1; //link to next free memory
+
+    if(intervalStart - sizeof(int) >=0)*((uint8_t*)heap->memory + intervalStart - sizeof(int)) = (int)-1; // removing link from previous memory , as its not a free memory anymore
+    if(intervalStart + totalSize + sizeof(int) < heap->size)*((uint8_t*)heap->memory + intervalStart + totalSize + 1) = (int)-1;//removing link from next memory , as its not a free memory anymore
+
+    if(intervalSize>totalSize){
+        heapInterval* nextMemory = pushInterval(heap , intervalSize - totalSize , intervalStart + totalSize +1);
+        *((uint8_t*)heap->memory + intervalStart + headerSize +size +1 )= nextMemory - heap->intervals;
+    }
+    else *((uint8_t*)heap->memory + intervalStart + headerSize + size +1) = -1;
+
+    return (uint8_t*)heap->memory + intervalStart + headerSize;
+}
+
+void freeHeapMemory(void* mem){
     
 }
 
-inline allocateHeapMemory(size_t size){
-    int it = findHeapBlock(size);
-    heapBlock* heap =memory.heaps+it;
-    
-
-}

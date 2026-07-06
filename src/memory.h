@@ -2,6 +2,7 @@
 #pragma once
 #include <stdint.h>
 #include "value.h"
+#include "datastruct.h"
 int growCapacity(int oldCap);
 
 #define growArray(type , pointer , oldCount , newCount)\
@@ -13,23 +14,28 @@ sizeof(type) * (newCount))
 void* reallocate(void* pointer , size_t oldSize , size_t newSize);
 int* find(int* start , int value , int length , bool isSort);
 
+#define headerSize 4*sizeof(int)
+#define footerSize sizeof(int);
 
 
 typedef struct{
     int size;
     int start;
-}heapIntervals;
-
-
+}heapInterval;
 
 typedef struct{
     void* memory;
+    int size;
     int maxInterval;
-
-    heapIntervals* intervals;
-    int* index;
+    
+    heapInterval* intervals;
+    rbt intervalRbt;
     int intervalsCount;
-    int intervalCapacity;
+    int intervalsCapacity;
+
+    int *recycleInterval;
+    int recycleIntervalCount;
+    int recycleIntervalCapacity;
 }heapBlock;
 
 
@@ -53,6 +59,7 @@ typedef struct {
 
     // heap memory
     heapBlock* heaps;
+    rbt heapRbt;
     int heapsCount;
     int heapsCapacity;
 }Memory;
