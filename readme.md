@@ -2,10 +2,7 @@
 
 Kura is a statically typed , bytecode compiled scripting language written in C. It has hand written scanner , tokenizer , a custom made binary tree expression compiler and a stack based virtual machine.
 
----
-
-## Table of Contents
-- [Overview](#overview)
+Hackclube reviewers note : this project was submited to hctg before
 ---
 
 ## Overview
