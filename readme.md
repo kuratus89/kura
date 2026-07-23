@@ -337,9 +337,9 @@ Complete!
 - [ ] vectors
 - [X] functions
 - [X] while loop
-- [ ] for loop
+- [X] for loop
 - [X] Expression evaluation
-- [ ] Custom memory system (stack and heap memory)
+- [X] Custom memory system (stack and heap memory)
 - [X] Comments
 - [X] Print
 - [ ] Custom object definition
