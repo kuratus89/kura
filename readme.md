@@ -265,13 +265,7 @@ Complete!
 ## File convention
 Kura accepts any file path but '.kura' is recommended
 
-## What works right now
 
-This is still under development and There are many things which is not fully implemented.
-
-1) Only int data types works
-2) 'if'/'else' does not work right now
-3) 'while'/'for' does not work right now
 
 ## Example programs
 
