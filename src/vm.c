@@ -369,7 +369,7 @@ interpretResult run(){
                 dataType type = (dataType)*nextInstruction();
                 int it = (int)*nextInstruction();
                 // iniStackValue(type , it);
-                iniStackMemoryValue(it , type);
+                iniStackMemoryValue(it+ topFunc()->varsCount , type);
                 break;
             }
 

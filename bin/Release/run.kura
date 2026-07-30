@@ -1,20 +1,14 @@
-func int sqrtbinary (int x) {
-    int left = 0;
-    int right = x;
-    int ans = 0;
-
-    while (left <= right) {
-        int mid = left + (right - left) / 2;
-
-        if (mid * mid <= x) {
-            ans = mid;
-            left = mid + 1;
-        } else {
-            right = mid - 1;
-        }
-    }
-
-    return ans;
+func int add(int a , int b){
+    return a+b;
 }
 
-print sqrtbinary(25);
+func int square(int n){
+    return n*n;
+}
+func int hypotenuseSquare(int a , int b){
+    return square(a)+ square(b);
+}
+
+print add(10 , 32);
+print square(9);
+print hypotenuseSquare(3,4);

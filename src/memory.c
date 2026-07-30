@@ -142,7 +142,7 @@ heapInterval* pushInterval(heapBlock* heap , int size , int start){
     return heap->intervals + ip;
 }
 
-inline iniHeapBlock(heapBlock* heap ,size_t size){
+inline void iniHeapBlock(heapBlock* heap ,size_t size){
 
 }
 

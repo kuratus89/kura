@@ -43,7 +43,7 @@ void pushIndex(int index , int value , int valueIndex, rbt* nodes){
     if(value>=nodes->indexCapacity){
         int oldCap = nodes->indexCapacity;
         nodes->indexCapacity = growCapacity(value);
-        nodes->indexKey = growArray(int , nodes->indexKey , oldCap , nodes->indexCapacity);
+        nodes->indexKey = growArray(indexRbtKeys , nodes->indexKey , oldCap , nodes->indexCapacity);
     }
     // *(nodes->indexKey + value)= index;
     (nodes->indexKey + value)->nodeIndex = index;
@@ -303,7 +303,7 @@ void pushRbtNode(int value , int key , rbt* nodes){
     }
 
     colorRed(nodes , it);
-    return 0;
+    return ;
 }
 
 void swap(rbt*nodes , int node1 , int node2){// does not swap color
@@ -566,12 +566,12 @@ void deleteNode(rbt* nodes , int nodeIt){
 }
 
 inline rbtNode* getRootRbtNode(rbt* nodes){
-    if(nodes->root == NULL)return NULL;
+    if(nodes->root == NIL)return NULL;
     return (nodes->nodes + nodes->root);
 }
 
 inline rbtNode* lowerBoundRbt(rbt* nodes , int key){
-    if(nodes->root == NULL)return NULL;
+    if(nodes->root == NIL)return NULL;
     rbtNode* node = getRootRbtNode(nodes);
     while(1){
         if(key>node->key){

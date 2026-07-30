@@ -1,20 +1,9 @@
-func int sqrtbinary (int x) {
-    int left = 0;
-    int right = x;
-    int ans = 0;
+int a = 10;
+int b = 3;
 
-    while (left <= right) {
-        int mid = left + (right - left) / 2;
-
-        if (mid * mid <= x) {
-            ans = mid;
-            left = mid + 1;
-        } else {
-            right = mid - 1;
-        }
-    }
-
-    return ans;
-}
-
-print sqrtbinary(25);
+print a+b;
+print a-b;
+print a*b;
+print a/b;
+print a+b*2;
+print (a+b)*2;
