@@ -19,7 +19,7 @@ The scanner produce raw lexemes , tokenizer classifies them , compiler convert t
 ## Pipeline
 
 ### Scanner ('scanner.c')
-it iterate the raw source string character by character and cuts it into 'scanPtr' . each one holds starts pointer , end pointer , a byte length and a line number . It does not copy the source text which saves a lot of memory .It handles whitespace , string litrals  , interget/float , alphabetic identifiers , single and double character signs , and comments (both single line and multi line).
+it iterate the raw source string character by character and cuts it into 'scanPtr' . each one holds starts pointer , end pointer , a byte length and a line number . It does not copy the source text which saves a lot of memory .It handles whitespace , string literals  , interger/float , alphabetic identifiers , single and double character signs , and comments (both single line and multi line).
 
 ### Tokenizer ('token.c')
 It iterates the scanPtr array and classifies each span into a 'tokenType'.It classify scans in priority order:
