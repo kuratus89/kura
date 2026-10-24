@@ -142,11 +142,11 @@ heapInterval* pushInterval(heapBlock* heap , int size , int start){
     return heap->intervals + ip;
 }
 
-inline void iniHeapBlock(heapBlock* heap ,size_t size){
+void iniHeapBlock(heapBlock* heap ,size_t size){
 
 }
 
-inline int addNewHeapBlock(size_t size){
+int addNewHeapBlock(size_t size){
     if(memory.heapsCount==memory.heapsCapacity){
         int oldCap = memory.heapsCapacity;
         memory.heapsCapacity =growCapacity(oldCap);
@@ -159,7 +159,7 @@ inline int addNewHeapBlock(size_t size){
 }
 
 
-inline int findHeapBlock(size_t size){
+int findHeapBlock(size_t size){
     rbtNode* node = lowerBoundRbt(&memory.heapRbt , size);
     if(node == NULL)return addNewHeapBlock(size);
     else return getTopNodeValue(node);

@@ -479,6 +479,9 @@ interpretResult run(){
                 break;
             }
             case OP_PRINT:{
+                #ifdef DEBUG
+                printf("print:");
+                #endif
                 printValue(popRuntimeStack());
                 printf("\n");
                 break;

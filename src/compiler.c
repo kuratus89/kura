@@ -216,6 +216,8 @@ bool isValue(tokenType type){
         case TOKEN_INT:  return 1;
         case TOKEN_FLOAT : return 1;
         case TOKEN_STRING : return 1;
+        case TOKEN_TRUE : return 1;
+        case TOKEN_FALSE : return 1;
         default : return 0;
     }
 }
@@ -604,14 +606,22 @@ dataType tokenTypeToDataType(Token* token){
         case TOKEN_INT : return DATA_INT;
         case TOKEN_FLOAT : return DATA_FLOAT;
         case TOKEN_STRING :  return DATA_STRING;
+        case TOKEN_TRUE :
+        case TOKEN_FALSE : return DATA_BOOL;
         default : return DATA_VOID;
     }
 }
 
 int pushValue(Token* token ,  Chunk* chunk ){
     Value value;
-    iniValue(&value ,tokenTypeToDataType(token) );
-    insertDataToValue(token , &value);
+    if(token->type == TOKEN_TRUE || token->type == TOKEN_FALSE){
+        iniValue(&value , DATA_BOOL);
+        *(int*)value.value = (token->type == TOKEN_TRUE) ? 1 : 0;
+    }
+    else {
+        iniValue(&value ,tokenTypeToDataType(token) );
+        insertDataToValue(token , &value);
+    }
     return writeValueArray(&chunk->constants , &value);
 }
 
@@ -648,7 +658,7 @@ void executeBinTree(int current , calcNodes* nodes , Chunk* chunk  , varMaps* ma
         if(nodes->node[current].val->type == TOKEN_IDENTIFIER){
             Token* it = nodes->node[current].val;
             it++;
-            if(it->type==TOKEN_LEFT_PAREN){
+            if(it->type==TOKEN_LEFT_PAREN){//function call
                 compileCallFunction(&(nodes->node[current].val) , chunk , func);
             }
             else {// variabale call
@@ -674,6 +684,14 @@ void executeBinTree(int current , calcNodes* nodes , Chunk* chunk  , varMaps* ma
             int it = pushValue(nodes->node[current].val , chunk);
             writeChunk(chunk , it , nodes->node[current].val->line);
         }
+        if(gotoIfFalse >= 0){
+        writeChunk(chunk , OP_GOTO_IF_FALSE ,nodes->node[current].val->line);
+        writeChunk(chunk , gotoIfFalse ,nodes->node[current].val->line );
+        }
+        if(gotoIfTrue >= 0){
+            writeChunk(chunk , OP_GOTO ,nodes->node[current].val->line);
+            writeChunk(chunk , gotoIfTrue ,nodes->node[current].val->line);
+        }
         return;
     }
     if(nodes->node[nodes->node[current].left].val ==NULL){
@@ -695,28 +713,37 @@ void executeBinTree(int current , calcNodes* nodes , Chunk* chunk  , varMaps* ma
             case TOKEN_PERCENT : op = OP_MOD;break;
         }
         writeChunk(chunk , op , nodes->node[current].val->line);
+
+        if(gotoIfFalse >= 0){
+            writeChunk(chunk , OP_GOTO_IF_FALSE , nodes->node[current].val->line);
+            writeChunk(chunk , gotoIfFalse , nodes->node[current].val->line);
+        }
+        if(gotoIfTrue >= 0){
+            writeChunk(chunk , OP_GOTO , nodes->node[current].val->line);
+            writeChunk(chunk , gotoIfTrue , nodes->node[current].val->line);
+        }
         return;
     }
     if((gotoIfFalse>=0)&&(nodes->node[current].val->type == TOKEN_AND_AND)){
         int newFlag = addFlag(chunk);
         executeBinTree(nodes->node[current].left , nodes, chunk , maps , func , gotoIfFalse , newFlag);
 
-        if(!isCmp(nodes->node[nodes->node[current].left].val->type)){
-            writeChunk(chunk , OP_GOTO_IF_FALSE , nodes->node[current].val->line);
-            writeChunk(chunk , gotoIfFalse , nodes->node[current].val->line);
-        }
+        // if(!isCmp(nodes->node[nodes->node[current].left].val->type)){
+        //     writeChunk(chunk , OP_GOTO_IF_FALSE , nodes->node[current].val->line);
+        //     writeChunk(chunk , gotoIfFalse , nodes->node[current].val->line);
+        // }
 
         emitFlag(chunk , newFlag);
 
         executeBinTree(nodes->node[current].right , nodes , chunk , maps , func , gotoIfFalse , gotoIfTrue);
 
-        if(!isCmp(nodes->node[nodes->node[current].right].val->type)){
-            writeChunk(chunk , OP_GOTO_IF_FALSE , nodes->node[current].val->line);
-            writeChunk(chunk , gotoIfFalse , nodes->node[current].val->line);
-        }
+        // if(!isCmp(nodes->node[nodes->node[current].right].val->type)){
+        //     writeChunk(chunk , OP_GOTO_IF_FALSE , nodes->node[current].val->line);
+        //     writeChunk(chunk , gotoIfFalse , nodes->node[current].val->line);
+        // }
 
-        writeChunk(chunk ,OP_GOTO ,nodes->node[current].val->line );
-        writeChunk(chunk , gotoIfTrue , nodes->node[current].val->line);
+        // writeChunk(chunk ,OP_GOTO ,nodes->node[current].val->line );
+        // writeChunk(chunk , gotoIfTrue , nodes->node[current].val->line);
         return;
         
     }
@@ -724,26 +751,26 @@ void executeBinTree(int current , calcNodes* nodes , Chunk* chunk  , varMaps* ma
         int newFlag = addFlag(chunk);
         executeBinTree(nodes->node[current].left , nodes , chunk , maps , func , newFlag , gotoIfTrue);
 
-        if(!isCmp(nodes->node[nodes->node[current].left].val->type)){
-            writeChunk(chunk , OP_GOTO_IF_TRUE , nodes->node[current].val->line);
-            writeChunk(chunk , gotoIfTrue , nodes->node[current].val->line);
-        }
+        // if(!isCmp(nodes->node[nodes->node[current].left].val->type)){
+        //     writeChunk(chunk , OP_GOTO_IF_TRUE , nodes->node[current].val->line);
+        //     writeChunk(chunk , gotoIfTrue , nodes->node[current].val->line);
+        // }
 
         emitFlag(chunk , newFlag);
         executeBinTree(nodes->node[current].right , nodes , chunk , maps , func , gotoIfFalse , gotoIfTrue);
 
-        if(!isCmp(nodes->node[nodes->node[current].right].val->type)){
-            writeChunk(chunk , OP_GOTO_IF_FALSE , nodes->node[current].val->line);
-            writeChunk(chunk , gotoIfFalse , nodes->node[current].val->line);
-        }
+        // if(!isCmp(nodes->node[nodes->node[current].right].val->type)){
+        //     writeChunk(chunk , OP_GOTO_IF_FALSE , nodes->node[current].val->line);
+        //     writeChunk(chunk , gotoIfFalse , nodes->node[current].val->line);
+        // }
 
-        writeChunk(chunk , OP_GOTO , nodes->node[current].val->line);
-        writeChunk(chunk , gotoIfTrue , nodes->node[current].val->line);
+        // writeChunk(chunk , OP_GOTO , nodes->node[current].val->line);
+        // writeChunk(chunk , gotoIfTrue , nodes->node[current].val->line);
         return;
     }
     else if(isCmp(nodes->node[current].val->type)){
-        executeBinTree(nodes->node[current].left , nodes , chunk ,maps , func , gotoIfFalse , gotoIfTrue);
-        executeBinTree(nodes->node[current].right , nodes , chunk , maps , func , gotoIfFalse , gotoIfTrue);
+        executeBinTree(nodes->node[current].left , nodes , chunk ,maps , func , -1,-1);
+        executeBinTree(nodes->node[current].right , nodes , chunk , maps , func , -1,-1);
 
         opcode op;
         switch(nodes->node[current].val->type){

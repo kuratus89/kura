@@ -1,14 +1,6 @@
-func int add(int a , int b){
-    return a+b;
+if(0){
+    print(1);
 }
-
-func int square(int n){
-    return n*n;
+else{
+    print(0);
 }
-func int hypotenuseSquare(int a , int b){
-    return square(a)+ square(b);
-}
-
-print add(10 , 32);
-print square(9);
-print hypotenuseSquare(3,4);

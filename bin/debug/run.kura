@@ -1,9 +1,5 @@
-int a = 10;
-int b = 3;
-
-print a+b;
-print a-b;
-print a*b;
-print a/b;
-print a+b*2;
-print (a+b)*2;
+int x = 9;
+if(true && false){
+    print(1);
+}
+else print(0);
